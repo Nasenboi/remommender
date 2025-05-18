@@ -12,6 +12,7 @@ from apps.recommendations.emotion_recognition.classifier import EmotionModel
 
 # based on: https://huggingface.co/audeering/wav2vec2-large-robust-12-ft-emotion-msp-dim
 
+
 class SERProcessor:
     SAMPLE_RATE: Final[int] = 16000
 
@@ -23,7 +24,7 @@ class SERProcessor:
 
     def __init__(self, max_length: int = 30):
         self._device = "cuda:0" if torch.cuda.is_available() else "cpu"
-        model_name = 'audeering/wav2vec2-large-robust-12-ft-emotion-msp-dim'
+        model_name = "audeering/wav2vec2-large-robust-12-ft-emotion-msp-dim"
         self._processor = Wav2Vec2Processor.from_pretrained(model_name)
         self._model = EmotionModel.from_pretrained(model_name).to(self._device)
         self._max_length = max_length
@@ -33,13 +34,15 @@ class SERProcessor:
         try:
             samples = librosa.load(file, sr=self.SAMPLE_RATE, mono=True)[0]
         except LibsndfileError as e:
-            raise ParseError(f'Audio file could not be parsed: {e.error_string}')
+            raise ParseError(f"Audio file could not be parsed: {e.error_string}")
 
         if len(samples) > self._max_length_samples:
-            raise ParseError(f'Audio file is longer than the maximum specified length ({self._max_length} seconds)')
+            raise ParseError(
+                f"Audio file is longer than the maximum specified length ({self._max_length} seconds)"
+            )
 
         processed_signal = self._processor(samples, sampling_rate=self.SAMPLE_RATE)
-        processed_signal = processed_signal['input_values'][0]
+        processed_signal = processed_signal["input_values"][0]
         processed_signal = processed_signal.reshape(1, -1)
         processed_signal = torch.from_numpy(processed_signal).to(self._device)
 
@@ -49,6 +52,6 @@ class SERProcessor:
         # convert to numpy
         result = result.detach().cpu().numpy()[0]
 
-        return self.SpeechEmotionResult(arousal=result[0], dominance=result[1], valence=result[2])
-
-
+        return self.SpeechEmotionResult(
+            arousal=result[0], dominance=result[1], valence=result[2]
+        )

@@ -12,7 +12,7 @@ class RecommendFromSpeechView(APIView):
     speech_processor = SERProcessor()
 
     def post(self, request, filename, format=None):
-        file = request.data['file']
+        file = request.data["file"]
         speech_emotion_result = self.speech_processor.process_audio_file(file)
 
         return Response(status=200, data=dataclasses.asdict(speech_emotion_result))

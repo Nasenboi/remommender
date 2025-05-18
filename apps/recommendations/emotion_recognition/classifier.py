@@ -8,6 +8,7 @@ from transformers.models.wav2vec2.modeling_wav2vec2 import (
 
 # Source: https://huggingface.co/audeering/wav2vec2-large-robust-12-ft-emotion-msp-dim
 
+
 class RegressionHead(nn.Module):
     r"""Classification head."""
 
