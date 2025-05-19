@@ -182,7 +182,7 @@ def get_song_information(collection: Collection, top_ID: str) -> Playlist:
     return playlist
 
 
-def generatePlaylist(
+def generate_playlist(
     collection: Collection,
     features: Union[AllFeatures, EmotionFeatures, EssentiaFeatures],
     playlistType: PLAYLIST_TYPES,
@@ -208,7 +208,7 @@ def generatePlaylist(
     return playlist
 
 
-def generateRandomPlaylist(collection: Collection) -> Playlist:
+def generate_random_playlist(collection: Collection) -> Playlist:
     """
     Generate a random playlist of songs from the MongoDB collection.
     :param collection: MongoDB collection object.
@@ -226,7 +226,7 @@ def generateRandomPlaylist(collection: Collection) -> Playlist:
     return random_playlist
 
 
-def searchSongs(collection: Collection, text: str) -> Playlist:
+def generate_songs(collection: Collection, text: str) -> Playlist:
     """
     Search for songs in the MongoDB collection based on the input text.
     :param collection: MongoDB collection object.

@@ -7,10 +7,10 @@ from .models import (
     EssentiaFeatures,
 )
 from .consts import MONGO_URL, MONGO_DB, MONGO_COLLECTION
-from .methods import generateRandomPlaylist, generatePlaylist, searchSongs
+from .methods import generate_random_playlist, generate_playlist, generate_songs
 
 
-class HSD_Recommender:
+class HSDRecommender:
     """
     The HSD Recommender class
     This class wrapps all the logic of the original HSD recommender api backend
@@ -27,41 +27,41 @@ class HSD_Recommender:
 
         self.collection.create_index([("title", "text")])
 
-    def generateRandomPlaylist(self) -> Playlist:
+    def generate_random_playlist(self) -> Playlist:
         """
         Generate a random playlist
         :return: A random Playlist
         """
-        return generateRandomPlaylist(self.collection)
+        return generate_random_playlist(self.collection)
 
-    def generateEmotionalPlaylist(self, emotionFeatures: EmotionFeatures) -> Playlist:
+    def generate_emotional_playlist(self, emotionFeatures: EmotionFeatures) -> Playlist:
         """
         Generate a playlist based on emotion features
         :param emotionFeatures: Emotion features
         :return: A playlist based on emotion features
         """
-        return generatePlaylist(self.collection, "emotion", emotionFeatures)
+        return generate_playlist(self.collection, "emotion", emotionFeatures)
 
-    def generateEssentiaPlaylist(self, essentiaFeatures: EssentiaFeatures) -> Playlist:
+    def generate_essentia_playlist(self, essentiaFeatures: EssentiaFeatures) -> Playlist:
         """
         Generate a playlist based on Essentia features
         :param essentiaFeatures: Essentia features
         :return: A playlist based on Essentia features
         """
-        return generatePlaylist(self.collection, "essentia", essentiaFeatures)
+        return generate_playlist(self.collection, "essentia", essentiaFeatures)
 
-    def generateAllFeaturesPlaylist(self, allFeatures: AllFeatures) -> Playlist:
+    def generate_all_features_playlist(self, allFeatures: AllFeatures) -> Playlist:
         """
         Generate a playlist based on all features
         :param allFeatures: All features
         :return: A playlist based on all features
         """
-        return generatePlaylist(self.collection, "allFeatures", allFeatures)
+        return generate_playlist(self.collection, "allFeatures", allFeatures)
 
-    def searchSongs(self, query: str) -> Playlist:
+    def generate_songs(self, query: str) -> Playlist:
         """
         Search for songs in the database
         :param query: The query to search for
         :return: A list of songs that match the query
         """
-        return searchSongs(self.collection, query)
+        return generate_songs(self.collection, query)
