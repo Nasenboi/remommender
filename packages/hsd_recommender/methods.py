@@ -1,6 +1,6 @@
 from annoy import AnnoyIndex
 from sklearn.neighbors import KDTree
-from typing import List, Union
+from typing import List, Tuple, Union
 import numpy as np
 from pymongo.collection import Collection
 from collections import defaultdict
@@ -48,7 +48,7 @@ def get_song_id(collection: Collection) -> List[str]:
 
 def get_song_id_and_dimensions(
     collection: Collection, playlistType: PLAYLIST_TYPES, genre: GENRE_DATA_BASE
-) -> List[List[str], List[List[float]]]:
+) -> Tuple[List[str], List[List[float]]]:
     """
     Get song IDs and their corresponding dimensions from the MongoDB collection.
     :param collection: MongoDB collection object.
@@ -184,9 +184,9 @@ def get_song_information(collection: Collection, top_ID: str) -> Playlist:
 
 def generate_playlist(
     collection: Collection,
-    features: Union[AllFeatures, EmotionFeatures, EssentiaFeatures],
     playlistType: PLAYLIST_TYPES,
-    genre: GENRE_DATA_BASE,
+    features: Union[AllFeatures, EmotionFeatures, EssentiaFeatures],
+    genre: GENRE_DATA_BASE = "none",
 ) -> Playlist:
     """
     Generate a playlist based on the input vector and playlist type.
@@ -196,15 +196,28 @@ def generate_playlist(
     :param genre: Genre of the songs (e.g., rock, pop, none).
     :return: List of Song objects in the generated playlist.
     """
+    print(f"Generating {playlistType} playlist with genre {genre}...")
+    print(f"features: {features}")
+
     song_id_dimensions = get_song_id_and_dimensions(collection, playlistType, genre)
-    start = time.time()
+    # start = time.time()
     # top_songs_ids = k_d_tree(song_id_dimensions, inputVector, PLAYLIST_LENGTH)
 
-    top_songs_ids = k_d_tree(song_id_dimensions, features, PLAYLIST_LENGTH)
-    end = time.time()
-    print(end - start)
-    playlist = get_song_information(top_songs_ids)
+    print(f"Song IDs and dimensions retrieved: {len(song_id_dimensions[0])}")
+    # print(song_id_dimensions)
 
+    top_songs_ids = k_d_tree(
+        data=song_id_dimensions, features=features, numClosestNeighbours=PLAYLIST_LENGTH
+    )
+
+    print(f"Top song IDs found: {len(top_songs_ids)}")
+    # print(top_songs_ids)
+
+    end = time.time()
+    # print(end - start)
+    playlist = get_song_information(collection=collection, top_ID=top_songs_ids)
+    print(f"Playlist generated with {len(playlist)} songs.")
+    print(playlist)
     return playlist
 
 
@@ -249,7 +262,7 @@ def generate_songs(collection: Collection, text: str) -> Playlist:
 
 
 def k_d_tree(
-    data: List[List[str], List[List[float]]],
+    data: Tuple[List[str], List[List[float]]],
     features: Union[AllFeatures, EmotionFeatures, EssentiaFeatures],
     numClosestNeighbours: int,
 ) -> List[str]:
@@ -285,7 +298,7 @@ def k_d_tree(
 
 
 def annoy(
-    song_id_dimensions: List[List[str], List[List[float]]],
+    song_id_dimensions: Tuple[List[str], List[List[float]]],
     inputVector: List[float],
     numClosestNeighbours: int,
 ) -> List[str]:
