@@ -6,9 +6,9 @@ services:
     container_name: mongodb
     restart: no
     ports:
-      - "27017:27017"  # 1:1 port mapping
+      - "27017:27017"
     volumes:
-      - /run/media/chr1s/0c135d7a-de30-4062-a5bc-16addf703a18/MuInf/db:/data/db
+      - ${DATA_PATH}db:/data/db
 
   apache:
     image: httpd:2.4
@@ -17,5 +17,5 @@ services:
     ports:
       - "80:80"
     volumes:
-      - /run/media/chr1s/0c135d7a-de30-4062-a5bc-16addf703a18/MuInf/Audio:/usr/local/apache2/htdocs/Audio
-      - /run/media/chr1s/0c135d7a-de30-4062-a5bc-16addf703a18/MuInf/Album_Art:/usr/local/apache2/htdocs/Album_Art
+      - ${DATA_PATH}Audio:/usr/local/apache2/htdocs/Audio
+      - ${DATA_PATH}Album_Art:/usr/local/apache2/htdocs/Album_Art
