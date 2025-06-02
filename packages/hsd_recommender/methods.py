@@ -60,7 +60,7 @@ def get_song_id_and_dimensions(
     song_ID = []
     song_Dimensions = []
 
-    if playlistType == "emotional":
+    if playlistType == "emotion":
         features = {
             "features.valence": 1,
             "features.arousal": 1,
@@ -169,15 +169,18 @@ def get_song_information(collection: Collection, top_ID: str) -> Playlist:
     playlist = []
 
     for i, val in enumerate(top_ID):
-        for song in collection.find({"_id": ObjectId(str(val))}):
-            entries_to_remove = ["_id"]
-            for i in entries_to_remove:
-                song.pop(i, None)
-            song = sort_genres_according_to_correlation(song)
-            song["ids"]["track_id"] = IP_MUSIC_SERVER + song["ids"]["track_id"]
-            song["ids"]["artwork_id"] = IP_ALBUM_ART_SERVER + song["ids"]["artwork_id"]
+        song = collection.find_one({"_id": val})
+        if song is None:
+            continue
 
-            playlist.append(song)
+        entries_to_remove = ["_id"]
+        for i in entries_to_remove:
+            song.pop(i, None)
+        # song = sort_genres_according_to_correlation(song)
+        song["ids"]["track_id"] = IP_MUSIC_SERVER + song["ids"]["track_id"]
+        song["ids"]["artwork_id"] = IP_ALBUM_ART_SERVER + song["ids"]["artwork_id"]
+
+        playlist.append(song)
 
     return playlist
 
@@ -196,28 +199,16 @@ def generate_playlist(
     :param genre: Genre of the songs (e.g., rock, pop, none).
     :return: List of Song objects in the generated playlist.
     """
-    print(f"Generating {playlistType} playlist with genre {genre}...")
-    print(f"features: {features}")
 
     song_id_dimensions = get_song_id_and_dimensions(collection, playlistType, genre)
-    # start = time.time()
     # top_songs_ids = k_d_tree(song_id_dimensions, inputVector, PLAYLIST_LENGTH)
-
-    print(f"Song IDs and dimensions retrieved: {len(song_id_dimensions[0])}")
-    # print(song_id_dimensions)
 
     top_songs_ids = k_d_tree(
         data=song_id_dimensions, features=features, numClosestNeighbours=PLAYLIST_LENGTH
     )
 
-    print(f"Top song IDs found: {len(top_songs_ids)}")
-    # print(top_songs_ids)
-
     end = time.time()
-    # print(end - start)
     playlist = get_song_information(collection=collection, top_ID=top_songs_ids)
-    print(f"Playlist generated with {len(playlist)} songs.")
-    print(playlist)
     return playlist
 
 
@@ -275,6 +266,9 @@ def k_d_tree(
     """
     # knearest extrahiert die doppelte größe der eigentlichen playlist, um später doppelte artists entfernen zu können
     # data = [[songAdresse1, songAdresse2, ...], [[InputVector], [5DimVektor], [5DimVektor2], ...]]
+
+    features = list(features.model_dump().values())
+
     data[1].insert(0, features)
     songList = []
 
