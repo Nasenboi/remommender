@@ -17,9 +17,11 @@ class RecommendFromSpeechView(APIView):
 
     def post(self, request, filename, format=None):
         file = request.data["file"]
-        speech_emotion_result = dataclasses.asdict(
-            self.speech_processor.process_audio_file(file)
-        )
+        speech_emotion_result = self.speech_processor.process_audio_file(file)
+        if isinstance(speech_emotion_result, list):
+            speech_emotion_result = speech_emotion_result[0]
+        speech_emotion_result = dataclasses.asdict(speech_emotion_result)
+
         valence = float(speech_emotion_result["valence"])
         arousal = float(speech_emotion_result["arousal"])
         dominance = float(speech_emotion_result["dominance"])

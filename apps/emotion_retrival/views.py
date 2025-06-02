@@ -10,9 +10,19 @@ from packages.emotion_recognition.processor import SERProcessor
 class RetrieveEmotionFromSpeechView(APIView):
     parser_classes = [FileUploadParser]
     speech_processor = SERProcessor()
+    window_size_s = 10
+    hop_size_s = 5
 
     def post(self, request, filename, format=None):
         file = request.data["file"]
+
         speech_emotion_result = self.speech_processor.process_audio_file(file)
 
-        return Response(status=200, data=dataclasses.asdict(speech_emotion_result))
+        if isinstance(speech_emotion_result, list):
+            speech_emotion_result = [
+                dataclasses.asdict(result) for result in speech_emotion_result
+            ]
+        else:
+            speech_emotion_result = dataclasses.asdict(speech_emotion_result)
+
+        return Response(status=200, data=speech_emotion_result)
