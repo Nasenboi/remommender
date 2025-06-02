@@ -4,7 +4,7 @@ from rest_framework.parsers import FileUploadParser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps.recommendations.emotion_recognition.processor import SERProcessor
+from packages.emotion_recognition.processor import SERProcessor
 
 
 class RecommendFromSpeechView(APIView):

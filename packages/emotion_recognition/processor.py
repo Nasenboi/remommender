@@ -8,7 +8,7 @@ from soundfile import LibsndfileError
 from transformers import Wav2Vec2Processor
 from typing_extensions import Final
 
-from apps.recommendations.emotion_recognition.classifier import EmotionModel
+from packages.emotion_recognition.classifier import EmotionModel
 
 # based on: https://huggingface.co/audeering/wav2vec2-large-robust-12-ft-emotion-msp-dim
 
