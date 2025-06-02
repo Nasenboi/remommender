@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:7
+    container_name: mongodb
+    restart: no
+    ports:
+      - "27017:27017"  # 1:1 port mapping
+    volumes:
+      - /run/media/chr1s/0c135d7a-de30-4062-a5bc-16addf703a18/MuInf/db:/data/db
+
+  apache:
+    image: httpd:2.4
+    container_name: apache_fileserver
+    restart: no
+    ports:
+      - "80:80"
+    volumes:
+      - /run/media/chr1s/0c135d7a-de30-4062-a5bc-16addf703a18/MuInf/Audio:/usr/local/apache2/htdocs/Audio
+      - /run/media/chr1s/0c135d7a-de30-4062-a5bc-16addf703a18/MuInf/Album_Art:/usr/local/apache2/htdocs/Album_Art
