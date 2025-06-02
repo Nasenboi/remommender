@@ -40,15 +40,23 @@ class HSDRecommender:
         :param emotionFeatures: Emotion features
         :return: A playlist based on emotion features
         """
-        return generate_playlist(self.collection, "emotion", emotionFeatures)
+        return generate_playlist(
+            collection=self.collection, playlistType="emotion", features=emotionFeatures
+        )
 
-    def generate_essentia_playlist(self, essentiaFeatures: EssentiaFeatures) -> Playlist:
+    def generate_essentia_playlist(
+        self, essentiaFeatures: EssentiaFeatures
+    ) -> Playlist:
         """
         Generate a playlist based on Essentia features
         :param essentiaFeatures: Essentia features
         :return: A playlist based on Essentia features
         """
-        return generate_playlist(self.collection, "essentia", essentiaFeatures)
+        return generate_playlist(
+            collection=self.collection,
+            playlistType="essentia",
+            features=essentiaFeatures,
+        )
 
     def generate_all_features_playlist(self, allFeatures: AllFeatures) -> Playlist:
         """
@@ -56,7 +64,11 @@ class HSDRecommender:
         :param allFeatures: All features
         :return: A playlist based on all features
         """
-        return generate_playlist(self.collection, "allFeatures", allFeatures)
+        return generate_playlist(
+            collection=self.collection,
+            playlistType="allFeatures",
+            features=allFeatures,
+        )
 
     def generate_songs(self, query: str) -> Playlist:
         """
