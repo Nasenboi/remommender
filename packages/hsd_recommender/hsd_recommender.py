@@ -27,11 +27,17 @@ class HSDRecommender:
 
         self.collection.create_index([("title", "text")])
 
+        if not self._is_connected():
+            raise ConnectionError("Failed to connect to MongoDB")
+
     def generate_random_playlist(self) -> Playlist:
         """
         Generate a random playlist
         :return: A random Playlist
         """
+        if not self._is_connected():
+            raise ConnectionError("Failed to connect to MongoDB")
+
         return generate_random_playlist(self.collection)
 
     def generate_emotional_playlist(self, emotionFeatures: EmotionFeatures) -> Playlist:
@@ -40,6 +46,9 @@ class HSDRecommender:
         :param emotionFeatures: Emotion features
         :return: A playlist based on emotion features
         """
+        if not self._is_connected():
+            raise ConnectionError("Failed to connect to MongoDB")
+
         return generate_playlist(
             collection=self.collection, playlistType="emotion", features=emotionFeatures
         )
@@ -52,6 +61,9 @@ class HSDRecommender:
         :param essentiaFeatures: Essentia features
         :return: A playlist based on Essentia features
         """
+        if not self._is_connected():
+            raise ConnectionError("Failed to connect to MongoDB")
+
         return generate_playlist(
             collection=self.collection,
             playlistType="essentia",
@@ -64,6 +76,9 @@ class HSDRecommender:
         :param allFeatures: All features
         :return: A playlist based on all features
         """
+        if not self._is_connected():
+            raise ConnectionError("Failed to connect to MongoDB")
+
         return generate_playlist(
             collection=self.collection,
             playlistType="allFeatures",
@@ -76,4 +91,19 @@ class HSDRecommender:
         :param query: The query to search for
         :return: A list of songs that match the query
         """
+        if not self._is_connected():
+            raise ConnectionError("Failed to connect to MongoDB")
+
         return generate_songs(self.collection, query)
+
+    def _is_connected(self) -> bool:
+        """
+        Check if the MongoDB connection is established
+        :return: True if connected, False otherwise
+        """
+        try:
+            self.client.admin.command("ping")
+            return True
+        except Exception as e:
+            print(f"MongoDB connection error: {e}")
+            return False

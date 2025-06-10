@@ -16,10 +16,17 @@ Including another URLconf
 """
 
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path
+from ninja import NinjaAPI
+
+from apps.recommendations.api import router as recommendations_router
+from apps.session.api import router as session_router
+
+api = NinjaAPI()
+api.add_router("/recommend/", recommendations_router)
+api.add_router("/session/", session_router)
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("recommend/", include("apps.recommendations.urls")),
-    path("emotion-retrival/", include("apps.emotion_retrival.urls")),
+    path("", api.urls),
 ]
