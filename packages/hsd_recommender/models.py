@@ -23,28 +23,9 @@ class Song(BaseModel):
 Playlist = List[Song]
 
 
-class AllFeatures(BaseModel):
-    valence: float
-    arousal: float
-    authenticity: float
-    timeliness: float
-    complexity: float
-    danceable: float
-    tonal: float
-    voice: float
-
-
 class EmotionFeatures(BaseModel):
     valence: float
     arousal: float
     authenticity: float
     timeliness: float
     complexity: float
-
-
-class EssentiaFeatures(BaseModel):
-    danceable: float
-    tonal: float
-    voice: float
-    female: float
-    bpm: float

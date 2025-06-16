@@ -1,5 +1,5 @@
 from ninja import ModelSchema, Schema
-from typing import Literal, List
+from typing import Literal, List, Optional
 from pydantic import BaseModel
 
 # Details
@@ -18,6 +18,7 @@ class SongSchema(BaseModel):
     features_frames: dict
     songStructure: dict
     ids: dict
+    url: Optional[str] = None
 
 
 PlaylistSchema = List[SongSchema]

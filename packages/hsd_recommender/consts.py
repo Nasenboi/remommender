@@ -9,12 +9,6 @@ MONGO_COLLECTION = "files"
 
 PLAYLIST_LENGTH = 16
 
-PLAYLIST_TYPES = Literal[
-    "emotional",
-    "essentia",
-    "allFeatures",
-]
-
 GENRE_DATA_BASE = Literal[
     "rock",
     "pop",

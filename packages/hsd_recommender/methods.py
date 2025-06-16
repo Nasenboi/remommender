@@ -4,22 +4,18 @@ from typing import List, Tuple, Union
 import numpy as np
 from pymongo.collection import Collection
 from collections import defaultdict
-from bson.objectid import ObjectId
 import time
 
 
 from .models import (
     Playlist,
     Song,
-    AllFeatures,
     EmotionFeatures,
-    EssentiaFeatures,
 )
 from .consts import (
     IP_MUSIC_SERVER,
     IP_ALBUM_ART_SERVER,
     PLAYLIST_LENGTH,
-    PLAYLIST_TYPES,
     GENRE_DATA_BASE,
     GENRE_CORR,
 )
@@ -47,12 +43,11 @@ def get_song_id(collection: Collection) -> List[str]:
 
 
 def get_song_id_and_dimensions(
-    collection: Collection, playlistType: PLAYLIST_TYPES, genre: GENRE_DATA_BASE
+    collection: Collection, genre: GENRE_DATA_BASE
 ) -> Tuple[List[str], List[List[float]]]:
     """
     Get song IDs and their corresponding dimensions from the MongoDB collection.
     :param collection: MongoDB collection object.
-    :param playlistType: Type of playlist (emotional, essentia, allFeatures).
     :param genre: Genre of the songs (e.g., rock, pop, none).
     :return: List containing song IDs and their dimensions.
     """
@@ -60,33 +55,13 @@ def get_song_id_and_dimensions(
     song_ID = []
     song_Dimensions = []
 
-    if playlistType == "emotion":
-        features = {
-            "features.valence": 1,
-            "features.arousal": 1,
-            "features.authenticity": 1,
-            "features.timeliness": 1,
-            "features.complexity": 1,
-        }
-    elif playlistType == "essentia":
-        features = {
-            "features.bpm": 1,
-            "features.voice": 1,
-            "features.female": 1,
-            "features.danceability": 1,
-            "features.tonal": 1,
-        }
-    else:  # allFeatures
-        features = {
-            "features.valence": 1,
-            "features.arousal": 1,
-            "features.authenticity": 1,
-            "features.timeliness": 1,
-            "features.complexity": 1,
-            "features.voice": 1,
-            "features.danceability": 1,
-            "features.tonal": 1,
-        }
+    features = {
+        "features.valence": 1,
+        "features.arousal": 1,
+        "features.authenticity": 1,
+        "features.timeliness": 1,
+        "features.complexity": 1,
+    }
 
     if genre == "none":
         for doc in collection.find({}, features):
@@ -187,8 +162,7 @@ def get_song_information(collection: Collection, top_ID: str) -> Playlist:
 
 def generate_playlist(
     collection: Collection,
-    playlistType: PLAYLIST_TYPES,
-    features: Union[AllFeatures, EmotionFeatures, EssentiaFeatures],
+    features: EmotionFeatures,
     genre: GENRE_DATA_BASE = "none",
 ) -> Playlist:
     """
@@ -200,7 +174,7 @@ def generate_playlist(
     :return: List of Song objects in the generated playlist.
     """
 
-    song_id_dimensions = get_song_id_and_dimensions(collection, playlistType, genre)
+    song_id_dimensions = get_song_id_and_dimensions(collection, genre)
     # top_songs_ids = k_d_tree(song_id_dimensions, inputVector, PLAYLIST_LENGTH)
 
     top_songs_ids = k_d_tree(
@@ -210,24 +184,6 @@ def generate_playlist(
     end = time.time()
     playlist = get_song_information(collection=collection, top_ID=top_songs_ids)
     return playlist
-
-
-def generate_random_playlist(collection: Collection) -> Playlist:
-    """
-    Generate a random playlist of songs from the MongoDB collection.
-    :param collection: MongoDB collection object.
-    :return: List of Song objects in the random playlist.
-    """
-    random_playlist = []
-    random_songs = collection.aggregate([{"$sample": {"size": PLAYLIST_LENGTH}}])
-
-    for song in random_songs:
-        song = sort_genres_according_to_correlation(song)
-        song["ids"]["track_id"] = IP_MUSIC_SERVER + song["ids"]["track_id"]
-        song["ids"]["artwork_id"] = IP_ALBUM_ART_SERVER + song["ids"]["artwork_id"]
-        random_playlist.append(song)
-
-    return random_playlist
 
 
 def generate_songs(collection: Collection, text: str) -> Playlist:
@@ -254,7 +210,7 @@ def generate_songs(collection: Collection, text: str) -> Playlist:
 
 def k_d_tree(
     data: Tuple[List[str], List[List[float]]],
-    features: Union[AllFeatures, EmotionFeatures, EssentiaFeatures],
+    features: EmotionFeatures,
     numClosestNeighbours: int,
 ) -> List[str]:
     """
