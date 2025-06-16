@@ -33,7 +33,7 @@ class SERProcessor:
 
     def process_audio_file(
         self, file, window_size_s: int = 10, hop_size_s: int = 5
-    ) -> Union[SpeechEmotionResult, List[SpeechEmotionResult]]:
+    ) -> SpeechEmotionResult:
         """
         Process audio file
         :param file: Path to the audio file or a file-like object
@@ -51,25 +51,9 @@ class SERProcessor:
                 f"Audio file is longer than the maximum specified length ({self._max_length} seconds)"
             )
 
-        window_size_samples = int(window_size_s * self.SAMPLE_RATE)
-        hop_size_samples = int(hop_size_s * self.SAMPLE_RATE)
+        return self._audio_to_speech_emotion(samples)
 
-        if len(samples) <= 2 * window_size_samples:
-            # If the audio is shorter than twice the window size, process it as a single segment
-            return self._process_audio_snippet(samples)
-
-        # Split the audio into overlapping snippets
-        snippets = librosa.util.frame(
-            samples,
-            frame_length=window_size_samples,
-            hop_length=hop_size_samples,
-        ).T
-
-        emotion_list = [self._process_audio_snippet(snippet) for snippet in snippets]
-
-        return emotion_list
-
-    def _process_audio_snippet(self, samples: np.ndarray) -> SpeechEmotionResult:
+    def _audio_to_speech_emotion(self, samples: np.ndarray) -> SpeechEmotionResult:
         """
         Process a single audio snippet
         :param samples: Audio samples as a numpy array
