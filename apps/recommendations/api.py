@@ -29,6 +29,7 @@ def get_emotion_features_from_speech(file: UploadedFile) -> EmotionFeatures:
     arousal = float(speech_emotion_result["arousal"])
     dominance = float(speech_emotion_result["dominance"])
     # pseudo features
+    # todo remove these! (use sliders instead)
     authenticity = valence * dominance
     timeliness = arousal * dominance
     complexity = dominance
@@ -45,7 +46,7 @@ def get_emotion_features_from_speech(file: UploadedFile) -> EmotionFeatures:
 
 @router.post("/from-speech", response=RecommendFromSpeechResponseSchema)
 def recommend_from_speech(
-    request, file: UploadedFile
+    request, file: UploadedFile # todo add genre query
 ) -> RecommendFromSpeechResponseSchema:
     """
     Recommend a playlist based on speech emotion recognition.
@@ -57,6 +58,7 @@ def recommend_from_speech(
 
     session = request.session
     played_songs = session.get("songs_played", [])
+    # todo add min play length, add song switch proba
 
     emotion_features = get_emotion_features_from_speech(file)
     # todo combine emotion features from speech and text
