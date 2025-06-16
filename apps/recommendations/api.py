@@ -8,9 +8,7 @@ from packages.hsd_recommender.hsd_recommender import HSDRecommender
 from packages.hsd_recommender.models import EmotionFeatures
 
 from .schemas import (
-    RecommendFromSpeechQuerySchema,
     RecommendFromSpeechResponseSchema,
-    SongSchema,
 )
 
 router = Router()
