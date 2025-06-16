@@ -23,8 +23,6 @@ def get_emotion_features_from_speech(file: UploadedFile) -> EmotionFeatures:
     :return: EmotionFeatures dataclass containing valence, arousal, dominance, authenticity, timeliness, and complexity
     """
     speech_emotion_result = serprocessor.process_audio_file(file)
-    if isinstance(speech_emotion_result, list):
-        speech_emotion_result = speech_emotion_result[0]
     speech_emotion_result = dataclasses.asdict(speech_emotion_result)
 
     valence = float(speech_emotion_result["valence"])
@@ -64,11 +62,10 @@ def recommend_from_speech(
     # todo combine emotion features from speech and text
 
     playlist = hsd_recommender.generate_emotional_playlist(
-        emotionFeatures=emotion_features[0]
+        emotionFeatures=emotion_features
     )
 
-    emotion_features = emotion_features[0]
-
+    # todo use a song thats not in played_songs
     response = RecommendFromSpeechResponseSchema(
         song=playlist[0], emotion_features=emotion_features  # todo
     )

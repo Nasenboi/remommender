@@ -39,11 +39,11 @@ class HSDRecommender:
             raise ConnectionError("Failed to connect to MongoDB")
 
         playlist = generate_playlist(
-            collection=self.collection, playlistType="emotion", features=emotionFeatures
+            collection=self.collection, features=emotionFeatures
         )
 
-        for song in playlist.songs:
-            song.url = self._generate_url_from_id(song.ids.song_id)
+        for song in playlist:
+            song["url"] = self._generate_url_from_id(song["_id"])
 
         return playlist
 
@@ -65,4 +65,5 @@ class HSDRecommender:
         :param song_id: The song ID
         :return: The URL of the song
         """
-        return f"{self.base_url}{song_id}"
+        # todo support other file formats
+        return f"{self.base_url}{song_id}.mp3"

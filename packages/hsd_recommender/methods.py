@@ -148,9 +148,6 @@ def get_song_information(collection: Collection, top_ID: str) -> Playlist:
         if song is None:
             continue
 
-        entries_to_remove = ["_id"]
-        for i in entries_to_remove:
-            song.pop(i, None)
         # song = sort_genres_according_to_correlation(song)
         song["ids"]["track_id"] = IP_MUSIC_SERVER + song["ids"]["track_id"]
         song["ids"]["artwork_id"] = IP_ALBUM_ART_SERVER + song["ids"]["artwork_id"]
@@ -169,7 +166,6 @@ def generate_playlist(
     Generate a playlist based on the input vector and playlist type.
     :param collection: MongoDB collection object.
     :param features: Input vector of different kinds of features.
-    :param playlistType: Type of playlist (emotional, essentia, allFeatures).
     :param genre: Genre of the songs (e.g., rock, pop, none).
     :return: List of Song objects in the generated playlist.
     """
