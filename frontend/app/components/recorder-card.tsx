@@ -5,6 +5,16 @@ import {Button} from "~/components/ui/button";
 import {Mic, Pause} from "lucide-react";
 import React, {type MouseEventHandler, useState} from "react";
 import AudioRecorder from "~/lib/AudioRecorder";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue
+} from "~/components/ui/select";
+import {Tooltip, TooltipContent, TooltipTrigger} from "~/components/ui/tooltip";
 
 
 export function RecorderCard() {
@@ -45,7 +55,30 @@ export function RecorderCard() {
             }
           </Button>
         </div>
-
+        <div className="w-full mt-4">
+          <Tooltip>
+            <TooltipTrigger className="w-full">
+              <Select>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Refresh time" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectLabel>Seconds</SelectLabel>
+                    <SelectItem value="5">5</SelectItem>
+                    <SelectItem value="10">10</SelectItem>
+                    <SelectItem value="15">15</SelectItem>
+                    <SelectItem value="20">20</SelectItem>
+                    <SelectItem value="30">30</SelectItem>
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>The number of seconds after which the emotion in your voice is re-evaluated</p>
+            </TooltipContent>
+          </Tooltip>
+        </div>
       </CardContent>
     </Card>
   )
