@@ -35,7 +35,6 @@ export default class AudioRecorder {
       this.mediaStream = await navigator.mediaDevices.getUserMedia(
         {audio: true}
       )
-      console.log(this.mediaStream)
       if (this.mediaStream) {
         this.mediaRecorder = new MediaRecorder(this.mediaStream)
         this.mediaRecorder.ondataavailable = (e) => {
