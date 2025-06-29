@@ -32,3 +32,4 @@ class SongFeatures(BaseModel):
     danceable: Optional[float] = None
     tonal: Optional[float] = None
     voice: Optional[float] = None
+    bpm: Optional[int] = None
