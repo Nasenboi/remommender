@@ -13,8 +13,8 @@ from .models import (
     SongFeatures,
 )
 from .consts import (
-    IP_MUSIC_SERVER,
-    IP_ALBUM_ART_SERVER,
+    MUSIC_SERVER_URL,
+    ALBUM_ART_SERVER_URL,
     PLAYLIST_LENGTH,
     GENRE_DATA_BASE,
     GENRE_CORR,
@@ -144,8 +144,8 @@ def get_song_information(collection: Collection, top_ID: str) -> Playlist:
             continue
 
         # song = sort_genres_according_to_correlation(song)
-        song["ids"]["track_id"] = IP_MUSIC_SERVER + song["ids"]["track_id"]
-        song["ids"]["artwork_id"] = IP_ALBUM_ART_SERVER + song["ids"]["artwork_id"]
+        song["ids"]["track_id"] = MUSIC_SERVER_URL + song["ids"]["track_id"]
+        song["ids"]["artwork_id"] = ALBUM_ART_SERVER_URL + song["ids"]["artwork_id"]
 
         playlist.append(song)
 
@@ -200,8 +200,8 @@ def generate_songs(collection: Collection, text: str) -> Playlist:
 
     for song in cursor:
         song = sort_genres_according_to_correlation(song)
-        song["ids"]["track_id"] = IP_MUSIC_SERVER + song["ids"]["track_id"]
-        song["ids"]["artwork_id"] = IP_ALBUM_ART_SERVER + song["ids"]["artwork_id"]
+        song["ids"]["track_id"] = MUSIC_SERVER_URL + song["ids"]["track_id"]
+        song["ids"]["artwork_id"] = ALBUM_ART_SERVER_URL + song["ids"]["artwork_id"]
         searchResults.append(song)
 
     return searchResults

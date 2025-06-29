@@ -4,7 +4,7 @@ from .models import (
     Playlist,
     SongFeatures,
 )
-from .consts import MONGO_URL, MONGO_DB, MONGO_COLLECTION, IP_MUSIC_SERVER
+from .consts import MONGO_URL, MONGO_DB, MONGO_COLLECTION, MUSIC_SERVER_URL
 from .methods import generate_playlist
 
 
@@ -22,7 +22,7 @@ class HSDRecommender:
         self.client = MongoClient(MONGO_URL)
         self.db = self.client[MONGO_DB]
         self.collection = self.db[MONGO_COLLECTION]
-        self.base_url = IP_MUSIC_SERVER
+        self.base_url = MUSIC_SERVER_URL
 
         self.collection.create_index([("title", "text")])
 

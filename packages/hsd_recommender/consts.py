@@ -1,7 +1,11 @@
 from typing import Literal, Dict
+import os
+from dotenv import load_dotenv
 
-IP_MUSIC_SERVER = "http://127.0.0.1:8080/Audio/"
-IP_ALBUM_ART_SERVER = "http://127.0.0.1:8080/Album_Art/"
+load_dotenv()
+
+MUSIC_SERVER_URL = os.getenv("MUSIC_SERVER_URL")
+ALBUM_ART_SERVER_URL = os.getenv("ALBUM_ART_SERVER_URL")
 
 MONGO_URL = "mongodb://localhost:27017"
 MONGO_DB = "musemantiq"
