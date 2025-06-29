@@ -1,6 +1,6 @@
 from annoy import AnnoyIndex
 from sklearn.neighbors import KDTree
-from typing import List, Tuple, Union
+from typing import List, Tuple, Dict
 import numpy as np
 from pymongo.collection import Collection
 from collections import defaultdict
@@ -10,7 +10,7 @@ import time
 from .models import (
     Playlist,
     Song,
-    EmotionFeatures,
+    SongFeatures,
 )
 from .consts import (
     IP_MUSIC_SERVER,
@@ -18,6 +18,7 @@ from .consts import (
     PLAYLIST_LENGTH,
     GENRE_DATA_BASE,
     GENRE_CORR,
+    SONG_FEATURES_SEARCH,
 )
 
 
@@ -43,7 +44,9 @@ def get_song_id(collection: Collection) -> List[str]:
 
 
 def get_song_id_and_dimensions(
-    collection: Collection, genre: GENRE_DATA_BASE
+    collection: Collection,
+    genre: GENRE_DATA_BASE,
+    features: Dict[str, bool] = SONG_FEATURES_SEARCH,
 ) -> Tuple[List[str], List[List[float]]]:
     """
     Get song IDs and their corresponding dimensions from the MongoDB collection.
@@ -54,14 +57,6 @@ def get_song_id_and_dimensions(
 
     song_ID = []
     song_Dimensions = []
-
-    features = {
-        "features.valence": 1,
-        "features.arousal": 1,
-        "features.authenticity": 1,
-        "features.timeliness": 1,
-        "features.complexity": 1,
-    }
 
     if genre == "none":
         for doc in collection.find({}, features):
@@ -159,7 +154,7 @@ def get_song_information(collection: Collection, top_ID: str) -> Playlist:
 
 def generate_playlist(
     collection: Collection,
-    features: EmotionFeatures,
+    features: SongFeatures,
     genre: GENRE_DATA_BASE = "none",
 ) -> Playlist:
     """
@@ -170,7 +165,15 @@ def generate_playlist(
     :return: List of Song objects in the generated playlist.
     """
 
-    song_id_dimensions = get_song_id_and_dimensions(collection, genre)
+    # Use only features that are present in the features object
+    features_search = {
+        "feature." + key: value is not None
+        for key, value in features.model_dump().items()
+    }
+
+    song_id_dimensions = get_song_id_and_dimensions(
+        collection, genre, features=features_search
+    )
     # top_songs_ids = k_d_tree(song_id_dimensions, inputVector, PLAYLIST_LENGTH)
 
     top_songs_ids = k_d_tree(
@@ -206,7 +209,7 @@ def generate_songs(collection: Collection, text: str) -> Playlist:
 
 def k_d_tree(
     data: Tuple[List[str], List[List[float]]],
-    features: EmotionFeatures,
+    features: SongFeatures,
     numClosestNeighbours: int,
 ) -> List[str]:
     """
@@ -219,7 +222,7 @@ def k_d_tree(
     # knearest extrahiert die doppelte größe der eigentlichen playlist, um später doppelte artists entfernen zu können
     # data = [[songAdresse1, songAdresse2, ...], [[InputVector], [5DimVektor], [5DimVektor2], ...]]
 
-    features = list(features.model_dump().values())
+    features = list(features.model_dump(exclude_none=True).values())
 
     data[1].insert(0, features)
     songList = []

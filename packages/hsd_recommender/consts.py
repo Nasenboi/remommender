@@ -1,4 +1,4 @@
-from typing import Literal
+from typing import Literal, Dict
 
 IP_MUSIC_SERVER = "http://127.0.0.1:8080/Audio/"
 IP_ALBUM_ART_SERVER = "http://127.0.0.1:8080/Album_Art/"
@@ -81,3 +81,15 @@ GENRE_CORR = Literal[
     "electronica",
     "chill",
 ]
+
+
+SONG_FEATURES_SEARCH: Dict[str, bool] = {
+    "features.valence": True,
+    "features.arousal": True,
+    "features.authenticity": False,
+    "features.timeliness": False,
+    "features.complexity": False,
+    "features.danceable": False,
+    "features.tonal": False,
+    "features.voice": False,
+}

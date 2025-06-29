@@ -2,7 +2,7 @@ from pymongo import MongoClient
 
 from .models import (
     Playlist,
-    EmotionFeatures,
+    SongFeatures,
 )
 from .consts import MONGO_URL, MONGO_DB, MONGO_COLLECTION, IP_MUSIC_SERVER
 from .methods import generate_playlist
@@ -29,7 +29,9 @@ class HSDRecommender:
         if not self._is_connected():
             raise ConnectionError("Failed to connect to MongoDB")
 
-    def generate_emotional_playlist(self, emotionFeatures: EmotionFeatures) -> Playlist:
+    def generate_playlist(
+        self, songFeatures: SongFeatures, genre: str = "none"
+    ) -> Playlist:
         """
         Generate a playlist based on emotion features
         :param emotionFeatures: Emotion features
@@ -39,7 +41,7 @@ class HSDRecommender:
             raise ConnectionError("Failed to connect to MongoDB")
 
         playlist = generate_playlist(
-            collection=self.collection, features=emotionFeatures
+            collection=self.collection, features=songFeatures, genre=genre
         )
 
         for song in playlist:

@@ -24,9 +24,12 @@ class Song(BaseModel):
 Playlist = List[Song]
 
 
-class EmotionFeatures(BaseModel):
-    valence: float
-    arousal: float
-    authenticity: float
-    timeliness: float
-    complexity: float
+class SongFeatures(BaseModel):
+    valence: Optional[float] = None
+    arousal: Optional[float] = None
+    authenticity: Optional[float] = None
+    timeliness: Optional[float] = None
+    complexity: Optional[float] = None
+    danceable: Optional[float] = None
+    tonal: Optional[float] = None
+    voice: Optional[float] = None
