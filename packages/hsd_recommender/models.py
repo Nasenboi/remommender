@@ -18,7 +18,6 @@ class Song(BaseModel):
     features_frames: dict
     songStructure: dict
     ids: dict
-    url: Optional[str] = None
 
 
 Playlist = List[Song]

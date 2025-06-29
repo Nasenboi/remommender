@@ -44,9 +44,6 @@ class HSDRecommender:
             collection=self.collection, features=songFeatures, genre=genre
         )
 
-        for song in playlist:
-            song["url"] = self._generate_url_from_id(song["_id"])
-
         return playlist
 
     def _is_connected(self) -> bool:
@@ -60,12 +57,3 @@ class HSDRecommender:
         except Exception as e:
             print(f"MongoDB connection error: {e}")
             return False
-
-    def _generate_url_from_id(self, song_id: str) -> str:
-        """
-        Generate a URL from the song ID
-        :param song_id: The song ID
-        :return: The URL of the song
-        """
-        # todo support other file formats
-        return f"{self.base_url}{song_id}.mp3"
