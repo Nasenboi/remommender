@@ -7,7 +7,7 @@ load_dotenv()
 MUSIC_SERVER_URL = os.getenv("MUSIC_SERVER_URL")
 ALBUM_ART_SERVER_URL = os.getenv("ALBUM_ART_SERVER_URL")
 
-MONGO_URL = "mongodb://localhost:27017"
+MONGO_URL = os.getenv("MONGO_URL")
 MONGO_DB = "musemantiq"
 MONGO_COLLECTION = "files"
 
