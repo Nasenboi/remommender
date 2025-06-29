@@ -46,7 +46,7 @@ def get_song_id(collection: Collection) -> List[str]:
 def get_song_id_and_dimensions(
     collection: Collection,
     genre: GENRE_DATA_BASE,
-    features: Dict[str, bool] = SONG_FEATURES_SEARCH,
+    features: Dict[str, int] = SONG_FEATURES_SEARCH,
 ) -> Tuple[List[str], List[List[float]]]:
     """
     Get song IDs and their corresponding dimensions from the MongoDB collection.
@@ -167,8 +167,9 @@ def generate_playlist(
 
     # Use only features that are present in the features object
     features_search = {
-        "feature." + key: value is not None
+        "features." + key: 1
         for key, value in features.model_dump().items()
+        if value is not None
     }
 
     song_id_dimensions = get_song_id_and_dimensions(

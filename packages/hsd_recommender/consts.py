@@ -88,12 +88,6 @@ GENRE_CORR = Literal[
 
 
 SONG_FEATURES_SEARCH: Dict[str, bool] = {
-    "features.valence": True,
-    "features.arousal": True,
-    "features.authenticity": False,
-    "features.timeliness": False,
-    "features.complexity": False,
-    "features.danceable": False,
-    "features.tonal": False,
-    "features.voice": False,
+    "features.valence": 1,
+    "features.arousal": 1,
 }
