@@ -3,12 +3,10 @@ import dataclasses
 from ninja import Router
 from ninja.files import UploadedFile
 
-from packages.hsd_recommender.models import EmotionFeatures
+from packages.hsd_recommender.models import SongFeatures
 
 from ..recommendations.api import (
-    hsd_recommender,
     serprocessor,
-    get_emotion_features_from_speech,
 )
 
 from .schemas import SERProcessorEmotionSchema
