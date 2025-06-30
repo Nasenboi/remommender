@@ -1,9 +1,14 @@
 import dataclasses
 
-from typing import Optional
+import math
+from typing import Optional, List
+
+from datetime import datetime
 
 from ninja import Router
 from ninja.files import UploadedFile
+
+from ..session.models import SessionData, TimeStampFloat
 
 from packages.emotion_recognition.processor import SERProcessor
 from packages.hsd_recommender.hsd_recommender import HSDRecommender
@@ -39,6 +44,16 @@ def get_emotion_features_from_speech(file: UploadedFile) -> EmotionFeatures:
     )
 
 
+def calculate_array_switch_probability(values: List[TimeStampFloat]) -> float:
+    """
+    Calculate the probability that a song should switch for a single array.
+    :param values: List of TimeStampFloat values, containing valence or arousal information
+    :return: Switch probability as a float (0-1)
+    """
+    # todo
+    return 1.0
+
+
 @router.post("/from-speech", response=RecommendFromSpeechResponseSchema)
 def recommend_from_speech(
     request,
@@ -68,7 +83,7 @@ def recommend_from_speech(
     """
 
     session = request.session
-    played_songs = session.get("songs_played", [])
+    session_data = session.get("data", SessionData())
     # todo add min play length, add song switch proba
 
     emotion_features = get_emotion_features_from_speech(file)
@@ -88,9 +103,27 @@ def recommend_from_speech(
 
     playlist = hsd_recommender.generate_playlist(songFeatures=features, genre=genre)
 
+    # Calculate Switch Probability
+    timestamp = datetime.now()
+    session_data.valence_values.append(
+        TimeStampFloat(timestamp=timestamp, value=emotion_features.valence)
+    )
+    session_data.arousal_values.append(
+        TimeStampFloat(timestamp=timestamp, value=emotion_features.arousal)
+    )
+
+    # todo
+    valence_switch_probability = calculate_array_switch_probability(
+        session_data.valence_values
+    )
+    arousal_switch_probability = calculate_array_switch_probability(
+        session_data.arousal_values
+    )
+    switch_probability = (valence_switch_probability + arousal_switch_probability) / 2
+
     # todo use a song thats not in played_songs
     response = RecommendFromSpeechResponseSchema(
-        song=playlist[0], features=features  # todo
+        song=playlist[0], features=features, switch_probability=switch_probability
     )
 
     session.save()

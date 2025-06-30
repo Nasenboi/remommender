@@ -8,3 +8,4 @@ from packages.hsd_recommender.models import Song, SongFeatures
 class RecommendFromSpeechResponseSchema(Schema):
     song: Song
     features: SongFeatures
+    switch_probability: float
