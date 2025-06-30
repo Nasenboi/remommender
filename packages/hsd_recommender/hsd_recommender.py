@@ -2,12 +2,10 @@ from pymongo import MongoClient
 
 from .models import (
     Playlist,
-    AllFeatures,
     EmotionFeatures,
-    EssentiaFeatures,
 )
-from .consts import MONGO_URL, MONGO_DB, MONGO_COLLECTION
-from .methods import generate_random_playlist, generate_playlist, generate_songs
+from .consts import MONGO_URL, MONGO_DB, MONGO_COLLECTION, IP_MUSIC_SERVER
+from .methods import generate_playlist
 
 
 class HSDRecommender:
@@ -24,15 +22,12 @@ class HSDRecommender:
         self.client = MongoClient(MONGO_URL)
         self.db = self.client[MONGO_DB]
         self.collection = self.db[MONGO_COLLECTION]
+        self.base_url = IP_MUSIC_SERVER
 
         self.collection.create_index([("title", "text")])
 
-    def generate_random_playlist(self) -> Playlist:
-        """
-        Generate a random playlist
-        :return: A random Playlist
-        """
-        return generate_random_playlist(self.collection)
+        if not self._is_connected():
+            raise ConnectionError("Failed to connect to MongoDB")
 
     def generate_emotional_playlist(self, emotionFeatures: EmotionFeatures) -> Playlist:
         """
@@ -40,28 +35,35 @@ class HSDRecommender:
         :param emotionFeatures: Emotion features
         :return: A playlist based on emotion features
         """
-        return generate_playlist(self.collection, "emotion", emotionFeatures)
+        if not self._is_connected():
+            raise ConnectionError("Failed to connect to MongoDB")
 
-    def generate_essentia_playlist(self, essentiaFeatures: EssentiaFeatures) -> Playlist:
-        """
-        Generate a playlist based on Essentia features
-        :param essentiaFeatures: Essentia features
-        :return: A playlist based on Essentia features
-        """
-        return generate_playlist(self.collection, "essentia", essentiaFeatures)
+        playlist = generate_playlist(
+            collection=self.collection, features=emotionFeatures
+        )
 
-    def generate_all_features_playlist(self, allFeatures: AllFeatures) -> Playlist:
-        """
-        Generate a playlist based on all features
-        :param allFeatures: All features
-        :return: A playlist based on all features
-        """
-        return generate_playlist(self.collection, "allFeatures", allFeatures)
+        for song in playlist:
+            song["url"] = self._generate_url_from_id(song["_id"])
 
-    def generate_songs(self, query: str) -> Playlist:
+        return playlist
+
+    def _is_connected(self) -> bool:
         """
-        Search for songs in the database
-        :param query: The query to search for
-        :return: A list of songs that match the query
+        Check if the MongoDB connection is established
+        :return: True if connected, False otherwise
         """
-        return generate_songs(self.collection, query)
+        try:
+            self.client.admin.command("ping")
+            return True
+        except Exception as e:
+            print(f"MongoDB connection error: {e}")
+            return False
+
+    def _generate_url_from_id(self, song_id: str) -> str:
+        """
+        Generate a URL from the song ID
+        :param song_id: The song ID
+        :return: The URL of the song
+        """
+        # todo support other file formats
+        return f"{self.base_url}{song_id}.mp3"

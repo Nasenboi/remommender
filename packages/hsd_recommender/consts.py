@@ -3,17 +3,11 @@ from typing import Literal
 IP_MUSIC_SERVER = "http://127.0.0.1:8080/Audio/"
 IP_ALBUM_ART_SERVER = "http://127.0.0.1:8080/Album_Art/"
 
-MONGO_URL = "mongodb://host.docker.internal:27017"
+MONGO_URL = "mongodb://localhost:27017"
 MONGO_DB = "musemantiq"
 MONGO_COLLECTION = "files"
 
 PLAYLIST_LENGTH = 16
-
-PLAYLIST_TYPES = Literal[
-    "emotional",
-    "essentia",
-    "allFeatures",
-]
 
 GENRE_DATA_BASE = Literal[
     "rock",

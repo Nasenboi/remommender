@@ -7,6 +7,7 @@ from rest_framework.exceptions import ParseError
 from soundfile import LibsndfileError
 from transformers import Wav2Vec2Processor
 from typing_extensions import Final
+from typing import List, Union
 
 from packages.emotion_recognition.classifier import EmotionModel
 
@@ -30,7 +31,16 @@ class SERProcessor:
         self._max_length = max_length
         self._max_length_samples = max_length * self.SAMPLE_RATE
 
-    def process_audio_file(self, file) -> SpeechEmotionResult:
+    def process_audio_file(
+        self, file, window_size_s: int = 10, hop_size_s: int = 5
+    ) -> SpeechEmotionResult:
+        """
+        Process audio file
+        :param file: Path to the audio file or a file-like object
+        :param window_size_s: Size of the window in seconds
+        :param hop_size_s: Size of the hop in seconds
+        :return: SpeechEmotionResult or list of SpeechEmotionResults
+        """
         try:
             samples = librosa.load(file, sr=self.SAMPLE_RATE, mono=True)[0]
         except LibsndfileError as e:
@@ -40,6 +50,15 @@ class SERProcessor:
             raise ParseError(
                 f"Audio file is longer than the maximum specified length ({self._max_length} seconds)"
             )
+
+        return self._audio_to_speech_emotion(samples)
+
+    def _audio_to_speech_emotion(self, samples: np.ndarray) -> SpeechEmotionResult:
+        """
+        Process a single audio snippet
+        :param samples: Audio samples as a numpy array
+        :return: SpeechEmotionResult
+        """
 
         processed_signal = self._processor(samples, sampling_rate=self.SAMPLE_RATE)
         processed_signal = processed_signal["input_values"][0]

@@ -6,32 +6,22 @@ But this is not our use case :)
 """
 
 from pydantic import BaseModel
-from typing import List
+from typing import List, Optional
 
 
 class Song(BaseModel):
     title: str
     album: str
     artist: str
-    duration_s: int
+    duration_s: float
     features: dict
     features_frames: dict
     songStructure: dict
     ids: dict
+    url: Optional[str] = None
 
 
 Playlist = List[Song]
-
-
-class AllFeatures(BaseModel):
-    valence: float
-    arousal: float
-    authenticity: float
-    timeliness: float
-    complexity: float
-    danceable: float
-    tonal: float
-    voice: float
 
 
 class EmotionFeatures(BaseModel):
@@ -40,11 +30,3 @@ class EmotionFeatures(BaseModel):
     authenticity: float
     timeliness: float
     complexity: float
-
-
-class EssentiaFeatures(BaseModel):
-    danceable: float
-    tonal: float
-    voice: float
-    female: float
-    bpm: float
