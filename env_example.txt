@@ -1,0 +1,8 @@
+# Docker
+DATA_PATH="/run/media/chr1s/chr1sdrive1/MuInf/"
+
+# Python
+SECRET_KEY = "django-insecure-39yrg+3$9&*%o7nohp@ruihd)d_t%-jdmb_h)@8he*u=43z!hh"
+MUSIC_SERVER_URL = "http://127.0.0.1:80/Audio/"
+ALBUM_ART_SERVER_URL = "http://127.0.0.1:80/Album_Art/"
+MONGO_URL = "mongodb://localhost:27017"

@@ -1,27 +1,24 @@
 from annoy import AnnoyIndex
 from sklearn.neighbors import KDTree
-from typing import List, Union
+from typing import List, Tuple, Dict
 import numpy as np
 from pymongo.collection import Collection
 from collections import defaultdict
-from bson.objectid import ObjectId
 import time
 
 
 from .models import (
     Playlist,
     Song,
-    AllFeatures,
-    EmotionFeatures,
-    EssentiaFeatures,
+    SongFeatures,
 )
 from .consts import (
-    IP_MUSIC_SERVER,
-    IP_ALBUM_ART_SERVER,
+    MUSIC_SERVER_URL,
+    ALBUM_ART_SERVER_URL,
     PLAYLIST_LENGTH,
-    PLAYLIST_TYPES,
     GENRE_DATA_BASE,
     GENRE_CORR,
+    SONG_FEATURES_SEARCH,
 )
 
 
@@ -47,46 +44,19 @@ def get_song_id(collection: Collection) -> List[str]:
 
 
 def get_song_id_and_dimensions(
-    collection: Collection, playlistType: PLAYLIST_TYPES, genre: GENRE_DATA_BASE
-) -> List[List[str], List[List[float]]]:
+    collection: Collection,
+    genre: GENRE_DATA_BASE,
+    features: Dict[str, int] = SONG_FEATURES_SEARCH,
+) -> Tuple[List[str], List[List[float]]]:
     """
     Get song IDs and their corresponding dimensions from the MongoDB collection.
     :param collection: MongoDB collection object.
-    :param playlistType: Type of playlist (emotional, essentia, allFeatures).
     :param genre: Genre of the songs (e.g., rock, pop, none).
     :return: List containing song IDs and their dimensions.
     """
 
     song_ID = []
     song_Dimensions = []
-
-    if playlistType == "emotional":
-        features = {
-            "features.valence": 1,
-            "features.arousal": 1,
-            "features.authenticity": 1,
-            "features.timeliness": 1,
-            "features.complexity": 1,
-        }
-    elif playlistType == "essentia":
-        features = {
-            "features.bpm": 1,
-            "features.voice": 1,
-            "features.female": 1,
-            "features.danceability": 1,
-            "features.tonal": 1,
-        }
-    else:  # allFeatures
-        features = {
-            "features.valence": 1,
-            "features.arousal": 1,
-            "features.authenticity": 1,
-            "features.timeliness": 1,
-            "features.complexity": 1,
-            "features.voice": 1,
-            "features.danceability": 1,
-            "features.tonal": 1,
-        }
 
     if genre == "none":
         for doc in collection.find({}, features):
@@ -169,61 +139,51 @@ def get_song_information(collection: Collection, top_ID: str) -> Playlist:
     playlist = []
 
     for i, val in enumerate(top_ID):
-        for song in collection.find({"_id": ObjectId(str(val))}):
-            entries_to_remove = ["_id"]
-            for i in entries_to_remove:
-                song.pop(i, None)
-            song = sort_genres_according_to_correlation(song)
-            song["ids"]["track_id"] = IP_MUSIC_SERVER + song["ids"]["track_id"]
-            song["ids"]["artwork_id"] = IP_ALBUM_ART_SERVER + song["ids"]["artwork_id"]
+        song = collection.find_one({"_id": val})
+        if song is None:
+            continue
 
-            playlist.append(song)
+        # song = sort_genres_according_to_correlation(song)
+        song["ids"]["track_id"] = MUSIC_SERVER_URL + song["ids"]["track_id"]
+        song["ids"]["artwork_id"] = ALBUM_ART_SERVER_URL + song["ids"]["artwork_id"]
+
+        playlist.append(song)
 
     return playlist
 
 
 def generate_playlist(
     collection: Collection,
-    features: Union[AllFeatures, EmotionFeatures, EssentiaFeatures],
-    playlistType: PLAYLIST_TYPES,
-    genre: GENRE_DATA_BASE,
+    features: SongFeatures,
+    genre: GENRE_DATA_BASE = "none",
 ) -> Playlist:
     """
     Generate a playlist based on the input vector and playlist type.
     :param collection: MongoDB collection object.
     :param features: Input vector of different kinds of features.
-    :param playlistType: Type of playlist (emotional, essentia, allFeatures).
     :param genre: Genre of the songs (e.g., rock, pop, none).
     :return: List of Song objects in the generated playlist.
     """
-    song_id_dimensions = get_song_id_and_dimensions(collection, playlistType, genre)
-    start = time.time()
+
+    # Use only features that are present in the features object
+    features_search = {
+        "features." + key: 1
+        for key, value in features.model_dump().items()
+        if value is not None
+    }
+
+    song_id_dimensions = get_song_id_and_dimensions(
+        collection, genre, features=features_search
+    )
     # top_songs_ids = k_d_tree(song_id_dimensions, inputVector, PLAYLIST_LENGTH)
 
-    top_songs_ids = k_d_tree(song_id_dimensions, features, PLAYLIST_LENGTH)
+    top_songs_ids = k_d_tree(
+        data=song_id_dimensions, features=features, numClosestNeighbours=PLAYLIST_LENGTH
+    )
+
     end = time.time()
-    print(end - start)
-    playlist = get_song_information(top_songs_ids)
-
+    playlist = get_song_information(collection=collection, top_ID=top_songs_ids)
     return playlist
-
-
-def generate_random_playlist(collection: Collection) -> Playlist:
-    """
-    Generate a random playlist of songs from the MongoDB collection.
-    :param collection: MongoDB collection object.
-    :return: List of Song objects in the random playlist.
-    """
-    random_playlist = []
-    random_songs = collection.aggregate([{"$sample": {"size": PLAYLIST_LENGTH}}])
-
-    for song in random_songs:
-        song = sort_genres_according_to_correlation(song)
-        song["ids"]["track_id"] = IP_MUSIC_SERVER + song["ids"]["track_id"]
-        song["ids"]["artwork_id"] = IP_ALBUM_ART_SERVER + song["ids"]["artwork_id"]
-        random_playlist.append(song)
-
-    return random_playlist
 
 
 def generate_songs(collection: Collection, text: str) -> Playlist:
@@ -241,16 +201,16 @@ def generate_songs(collection: Collection, text: str) -> Playlist:
 
     for song in cursor:
         song = sort_genres_according_to_correlation(song)
-        song["ids"]["track_id"] = IP_MUSIC_SERVER + song["ids"]["track_id"]
-        song["ids"]["artwork_id"] = IP_ALBUM_ART_SERVER + song["ids"]["artwork_id"]
+        song["ids"]["track_id"] = MUSIC_SERVER_URL + song["ids"]["track_id"]
+        song["ids"]["artwork_id"] = ALBUM_ART_SERVER_URL + song["ids"]["artwork_id"]
         searchResults.append(song)
 
     return searchResults
 
 
 def k_d_tree(
-    data: List[List[str], List[List[float]]],
-    features: Union[AllFeatures, EmotionFeatures, EssentiaFeatures],
+    data: Tuple[List[str], List[List[float]]],
+    features: SongFeatures,
     numClosestNeighbours: int,
 ) -> List[str]:
     """
@@ -262,6 +222,9 @@ def k_d_tree(
     """
     # knearest extrahiert die doppelte größe der eigentlichen playlist, um später doppelte artists entfernen zu können
     # data = [[songAdresse1, songAdresse2, ...], [[InputVector], [5DimVektor], [5DimVektor2], ...]]
+
+    features = list(features.model_dump(exclude_none=True).values())
+
     data[1].insert(0, features)
     songList = []
 
@@ -285,7 +248,7 @@ def k_d_tree(
 
 
 def annoy(
-    song_id_dimensions: List[List[str], List[List[float]]],
+    song_id_dimensions: Tuple[List[str], List[List[float]]],
     inputVector: List[float],
     numClosestNeighbours: int,
 ) -> List[str]:
