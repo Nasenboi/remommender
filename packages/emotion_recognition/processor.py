@@ -3,7 +3,7 @@ from dataclasses import dataclass
 import librosa
 import numpy as np
 import torch
-from rest_framework.exceptions import ParseError
+from ninja.errors import ValidationError
 from soundfile import LibsndfileError
 from transformers import Wav2Vec2Processor
 from typing_extensions import Final
@@ -44,10 +44,10 @@ class SERProcessor:
         try:
             samples = librosa.load(file, sr=self.SAMPLE_RATE, mono=True)[0]
         except LibsndfileError as e:
-            raise ParseError(f"Audio file could not be parsed: {e.error_string}")
+            raise ValidationError(f"Audio file could not be parsed: {e.error_string}")
 
         if len(samples) > self._max_length_samples:
-            raise ParseError(
+            raise ValidationError(
                 f"Audio file is longer than the maximum specified length ({self._max_length} seconds)"
             )
 
