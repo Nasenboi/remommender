@@ -26,6 +26,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv("SECRET_KEY")
+if not SECRET_KEY:
+    raise RuntimeError(
+        "SECRET_KEY environment variable is not set. Please provide a value for SECRET_KEY."
+    )
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -92,6 +96,10 @@ DATABASES = {
 
 MEDIA_URL = os.getenv("MEDIA_URL")
 MEDIA_ROOT = os.getenv("MEDIA_ROOT")
+if not MEDIA_URL or not MEDIA_ROOT:
+    raise RuntimeError(
+        "MEDIA_URL and MEDIA_ROOT environment variables must be set. Please provide values for MEDIA_URL and MEDIA_ROOT."
+    )
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
