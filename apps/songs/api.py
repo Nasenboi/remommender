@@ -15,7 +15,6 @@ router = Router(tags=["songs"])
 @router.post("/song-file/")
 def upload_song_file(
     request,
-    use_existing_file: Optional[bool] = Form(True),
     audio_file: UploadedFile = File(...),
 ):
     if not audio_file.name.endswith((".mp3", ".wav")):
@@ -27,15 +26,6 @@ def upload_song_file(
     if existing_songfile:
         return {"id": existing_songfile.id}
 
-    # Create model instance without re-saving the file
-    file_path = os.path.join(settings.MEDIA_ROOT, "Audio", audio_file.name)
-    if use_existing_file and os.path.exists(file_path):
-        song_file = SongFile()
-        song_file.audio_file = file_path
-        song_file.full_clean()
-        song_file.save()
-        return {"id": song_file.id}
-
     song_file = SongFile.objects.create(audio_file=audio_file)
     return {"id": song_file.id}
 
@@ -43,7 +33,6 @@ def upload_song_file(
 @router.post("/artwork-file/")
 def upload_artwork_file(
     request,
-    use_existing_file: Optional[bool] = Form(True),
     artwork: UploadedFile = File(...),
     album: str = Form(...),
     artist: str = Form(...),
@@ -57,15 +46,6 @@ def upload_artwork_file(
     existing_artwork = ArtworkFile.objects.filter(album=album, artist=artist).first()
     if existing_artwork:
         return {"id": existing_artwork.id}
-
-    # Create model instance without re-saving the file
-    file_path = os.path.join(settings.MEDIA_ROOT, "Album_Art", artwork.name)
-    if use_existing_file and os.path.exists(file_path):
-        artwork_file = ArtworkFile(album=album, artist=artist)
-        artwork_file.artwork = file_path
-        artwork_file.full_clean()
-        artwork_file.save()
-        return {"id": artwork_file.id}
 
     artwork_file = ArtworkFile.objects.create(album=album, artwork=artwork)
     return {"id": artwork_file.id}
