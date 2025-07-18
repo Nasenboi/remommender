@@ -1,6 +1,7 @@
 #!/bin/bash
 
 RESET_DB=false
+DELETE_FILES=false
 
 for arg in "$@"; do
     case $arg in
@@ -8,12 +9,28 @@ for arg in "$@"; do
         RESET_DB=true
         shift
         ;;
+        -d|--delete)
+        DELETE_FILES=true
+        shift
+        ;;
     esac
 done
 
-if [ "$RESET_DB" = true ]; then
-    echo "!! Resetting the database !!"
+if [ "$DELETE_FILES" = true ]; then
+    echo "!! Deleting media files !!"
+    read -p "Are you sure you want to delete all media files? This will remove all files in MEDIA_ROOT. [y/N]: " confirm
+    confirm=${confirm:-N}
+    if [[ ! "$confirm" =~ ^[Yy]$ ]]; then
+        echo "Aborting file deletion."
+        DELETE_FILES=false
+    fi
+fi
+
+if [ "$DELETE_FILES" = true ]; then
     rm -rf $MEDIA_ROOT*
+fi
+
+if [ "$RESET_DB" = true ]; then
     python manage.py flush --no-input
 fi
 
