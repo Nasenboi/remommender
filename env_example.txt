@@ -2,3 +2,4 @@
 SECRET_KEY = "django-insecure-39yrg+3$9&*%o7nohp@ruihd)d_t%-jdmb_h)@8he*u=43z!hh"
 MEDIA_URL = "/media/"
 MEDIA_ROOT = "/cool/folder/root/path"
+SQL_DIR = "/cool/folder/to/db.sqlite3"

@@ -84,7 +84,7 @@ WSGI_APPLICATION = "remommender.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "NAME": os.getenv("SQL_DIR", BASE_DIR / "db.sqlite3"),
     }
 }
 
