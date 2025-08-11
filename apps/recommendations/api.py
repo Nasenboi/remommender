@@ -3,7 +3,6 @@ from typing import Optional
 from ninja import Router
 from ninja.files import UploadedFile
 
-from apps.core.consts import EMOTION_VALUES_WINDOW_SIZE
 from apps.core.schemas import SongFeaturesSchema
 from apps.session.schemas import SessionData
 
