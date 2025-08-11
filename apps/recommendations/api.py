@@ -3,6 +3,7 @@ from typing import Optional
 from ninja import Router
 from ninja.files import UploadedFile
 
+from apps.core.consts import EMOTION_VALUES_WINDOW_SIZE
 from apps.core.schemas import SongFeaturesSchema
 from apps.session.schemas import SessionData
 
@@ -10,6 +11,7 @@ from .methods import (
     calculate_array_switch_probability,
     get_emotion_features_from_speech,
     get_song_recommendation,
+    update_session_data,
 )
 from .recommender.consts import GENRE_DATA_BASE
 from .recommender.methods import generate_playlist
@@ -49,13 +51,14 @@ def recommend_from_speech(
 
     playlist = generate_playlist(genre=genre, features=features)
 
-    switch_probablity = calculate_array_switch_probability(
-        session_data["arousal_values"],
-        session_data["valence_values"],
-        session_data["value_index"],
-    )
+    session_data = update_session_data(emotion_features.valence, emotion_features.arousal, session_data)
 
-    song = get_song_recommendation(playlist, session_data["songs_played"])
+    session_data.old_mean, switch_probablity = calculate_array_switch_probability(session_data)
+
+    song = get_song_recommendation(playlist, session_data.songs_played)
+
+    # save updated session data
+    request.session["session_data"] = session_data
 
     return RecommendFromSpeechResponseSchema(
         song=song,

@@ -1,11 +1,12 @@
-import dataclasses
 from typing import List, Tuple
 
 from ninja.files import UploadedFile
 
 from apps.core.schemas import Playlist, SongSchema
+from apps.session.schemas import SessionData
 
 from .emotion_recognition.processor import SERProcessor
+from .emotion_slope_detection.emotion_slope_detection import get_slope_probablity, update_sample_index, update_samples
 from .schemas import EmotionFeaturesSchema
 
 serprocessor = SERProcessor()
@@ -25,18 +26,29 @@ def get_emotion_features_from_speech(file: UploadedFile) -> EmotionFeaturesSchem
     )
 
 
+def update_session_data(valence: float, arousal: float, session_data: SessionData) -> SessionData:
+    """
+    Update the session data with new valence and arousal values.
+    :param valence: Valence value
+    :param arousal: Arousal value
+    :param session_data: Current session data
+    :return: Updated session data
+    """
+    session_data.samples = update_samples(valence, arousal, session_data.samples, session_data.sample_index)
+    session_data.sample_index = update_sample_index(session_data.sample_index)
+    return session_data
+
+
 def calculate_array_switch_probability(
-    arousal_values: List[float],
-    valence_values: List[float],
-    value_index: int,
-) -> float:
+    session_data: SessionData,
+) -> Tuple[float, float]:
     """
     Calculate the probability that a song should switch for a single array.
     :param values: List of TimeStampFloat values, containing valence or arousal information
-    :return: Switch probability as a float (0-1)
+    :return: The calculated welford mean value and the switch probability as a float (0-1)
     """
-    # todo
-    return 1.0
+
+    return get_slope_probablity(session_data.samples, session_data.old_mean)
 
 
 def get_song_recommendation(
