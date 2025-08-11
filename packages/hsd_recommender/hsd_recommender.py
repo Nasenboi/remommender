@@ -2,9 +2,9 @@ from pymongo import MongoClient
 
 from .models import (
     Playlist,
-    EmotionFeatures,
+    SongFeatures,
 )
-from .consts import MONGO_URL, MONGO_DB, MONGO_COLLECTION, IP_MUSIC_SERVER
+from .consts import MONGO_URL, MONGO_DB, MONGO_COLLECTION, MUSIC_SERVER_URL
 from .methods import generate_playlist
 
 
@@ -22,14 +22,16 @@ class HSDRecommender:
         self.client = MongoClient(MONGO_URL)
         self.db = self.client[MONGO_DB]
         self.collection = self.db[MONGO_COLLECTION]
-        self.base_url = IP_MUSIC_SERVER
+        self.base_url = MUSIC_SERVER_URL
 
         self.collection.create_index([("title", "text")])
 
         if not self._is_connected():
             raise ConnectionError("Failed to connect to MongoDB")
 
-    def generate_emotional_playlist(self, emotionFeatures: EmotionFeatures) -> Playlist:
+    def generate_playlist(
+        self, songFeatures: SongFeatures, genre: str = "none"
+    ) -> Playlist:
         """
         Generate a playlist based on emotion features
         :param emotionFeatures: Emotion features
@@ -39,11 +41,8 @@ class HSDRecommender:
             raise ConnectionError("Failed to connect to MongoDB")
 
         playlist = generate_playlist(
-            collection=self.collection, features=emotionFeatures
+            collection=self.collection, features=songFeatures, genre=genre
         )
-
-        for song in playlist:
-            song["url"] = self._generate_url_from_id(song["_id"])
 
         return playlist
 
@@ -58,12 +57,3 @@ class HSDRecommender:
         except Exception as e:
             print(f"MongoDB connection error: {e}")
             return False
-
-    def _generate_url_from_id(self, song_id: str) -> str:
-        """
-        Generate a URL from the song ID
-        :param song_id: The song ID
-        :return: The URL of the song
-        """
-        # todo support other file formats
-        return f"{self.base_url}{song_id}.mp3"

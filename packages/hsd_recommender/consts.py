@@ -1,9 +1,13 @@
-from typing import Literal
+from typing import Literal, Dict
+import os
+from dotenv import load_dotenv
 
-IP_MUSIC_SERVER = "http://127.0.0.1:8080/Audio/"
-IP_ALBUM_ART_SERVER = "http://127.0.0.1:8080/Album_Art/"
+load_dotenv()
 
-MONGO_URL = "mongodb://localhost:27017"
+MUSIC_SERVER_URL = os.getenv("MUSIC_SERVER_URL")
+ALBUM_ART_SERVER_URL = os.getenv("ALBUM_ART_SERVER_URL")
+
+MONGO_URL = os.getenv("MONGO_URL")
 MONGO_DB = "musemantiq"
 MONGO_COLLECTION = "files"
 
@@ -81,3 +85,9 @@ GENRE_CORR = Literal[
     "electronica",
     "chill",
 ]
+
+
+SONG_FEATURES_SEARCH: Dict[str, bool] = {
+    "features.valence": 1,
+    "features.arousal": 1,
+}

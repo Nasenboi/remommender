@@ -1,32 +1,32 @@
 "use client"
 
+import {backend} from "~/lib/APIRequests"
+
+type AudioResult = {
+
+}
+
 export default class AudioRecorder {
   private mediaStream: MediaStream | null
   private mediaRecorder: MediaRecorder | null
   private audioBuffer: Blob[]
-
-  private refreshIntervalID: number | null
-  private readonly refreshSeconds: number
   private recording: boolean
 
-  private constructor(refreshSeconds: number) {
+  private constructor() {
     this.mediaStream = null
     this.mediaRecorder = null
     this.audioBuffer = []
-    this.refreshIntervalID = null
-    this.refreshSeconds = refreshSeconds
     this.recording = false
   }
 
-  public static async createRecorder(refreshSeconds: number): Promise<AudioRecorder> {
-    const recorder = new AudioRecorder(refreshSeconds)
+  public static async createRecorder(): Promise<AudioRecorder> {
+    const recorder = new AudioRecorder()
     await recorder.initAudio()
     return recorder
   }
 
   public async start(): Promise<void> {
-    this.setupRefreshing()
-    this.mediaRecorder?.start()
+    this.mediaRecorder?.start(500)
     this.recording = true
   }
 
@@ -35,16 +35,10 @@ export default class AudioRecorder {
       this.mediaStream = await navigator.mediaDevices.getUserMedia(
         {audio: true}
       )
-      if (this.mediaStream) {
-        this.mediaRecorder = new MediaRecorder(this.mediaStream)
-        this.mediaRecorder.ondataavailable = (e) => {
-          if (e.data.size > 0) {
-            this.audioBuffer.push(e.data)
-          }
-        }
-        this.mediaRecorder.onstop = (e) => {
-          this.sendAudioAndGetResult()
-          this.clearBuffer()
+      this.mediaRecorder = new MediaRecorder(this.mediaStream)
+      this.mediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) {
+          this.audioBuffer.push(e.data)
         }
       }
     } catch (e) {
@@ -52,32 +46,42 @@ export default class AudioRecorder {
     }
   }
 
-  private async sendAudioAndGetResult(): Promise<void> {
-    const recordedBytes = await new Blob(
-      this.audioBuffer, { type: 'audio/wav' }
-    ).bytes()
-    //TODO: implement sending audio
+  private static async sendAudioAndGetResult(audioBuffer: Blob[], mimeType: string): Promise<void> {
+    const recordedBlob = new Blob(
+      audioBuffer, { type: mimeType }
+    )
+    const url = URL.createObjectURL(recordedBlob);
+    const audio = document.createElement('audio');
+    audio.src = url;
+    audio.controls = true;
+    document.body.appendChild(audio);
+    const formData = new FormData()
+    formData.append('file', recordedBlob)
+    const response = await backend.post('/recommend/from-speech', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    })
   }
 
   private clearBuffer(): void {
     this.audioBuffer = []
   }
 
-  private setupRefreshing(): void  {
-    this.refreshIntervalID = window.setInterval(this.refresh, this.refreshSeconds)
-  }
+  public async refreshAndGetResult(): Promise<void> {
+    if(!this.mediaRecorder) {
+      throw "MediaRecorder object does not exist - have you called initAudio() first?"
+    }
 
-  private refresh(): void {
-    this.mediaRecorder?.stop()
-    this.mediaRecorder?.start()
+    this.mediaRecorder.stop()
+    const result = AudioRecorder.sendAudioAndGetResult(this.audioBuffer, this.mediaRecorder.mimeType)
+    this.clearBuffer()
+    this.mediaRecorder.start(500)
+    return await result
   }
 
   public stop(): void {
     this.mediaRecorder?.stop()
-    if(this.refreshIntervalID) {
-      clearInterval(this.refreshIntervalID)
-      this.refreshIntervalID = null
-    }
     this.mediaStream?.getTracks().forEach((track) => {
       track.stop()
     })

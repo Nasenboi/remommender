@@ -3,7 +3,7 @@
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "./ui/card";
 import {Button} from "~/components/ui/button";
 import {Mic, Pause} from "lucide-react";
-import React, {type MouseEventHandler, useState} from "react";
+import React, {useEffect, useState} from "react";
 import AudioRecorder from "~/lib/AudioRecorder";
 import {
   Select,
@@ -17,39 +17,48 @@ import {
 import {Tooltip, TooltipContent, TooltipTrigger} from "~/components/ui/tooltip";
 import {Label} from "~/components/ui/label";
 
-
 export function RecorderCard() {
   const [ isRecording, setIsRecording ] = useState<boolean>(false)
   const [ refreshTime, setRefreshTime ] = useState<number>(10)
+  const [ audioRecorder, setAudioRecorder ] = useState<AudioRecorder | null>(null)
+  const [ refreshInterval, setRefreshInterval ] = useState<any>(null)
 
-  let audioRecorder: AudioRecorder | null = null
-
-
-  async function recordToggle(e : React.MouseEvent<HTMLElement>) {
+  function recordToggle(e : React.MouseEvent<HTMLElement>) {
     if(!audioRecorder) {
-      audioRecorder = await AudioRecorder.createRecorder(refreshTime)
+      AudioRecorder.createRecorder().then((recorderInstance) => {
+        setAudioRecorder(recorderInstance)
+        recorderInstance.start().then(() => {
+          setIsRecording(true)
+        })
+      })
+      return
     }
-
     if(isRecording) {
-      audioRecorder.stop()
+      audioRecorder?.stop()
+      setIsRecording(false)
     } else {
-      await audioRecorder.start()
+      audioRecorder?.start().then(() => {
+        setIsRecording(true)
+      })
     }
-
-    setIsRecording(audioRecorder.isRecording())
   }
 
-  async function changeRefreshTime(value: string) {
-    setRefreshTime(parseInt(value))
-    if(audioRecorder) {
-      if(isRecording) {
-        audioRecorder?.stop()
-      }
-      audioRecorder = await AudioRecorder.createRecorder(refreshTime)
-      if(isRecording) {
-        audioRecorder?.start()
-      }
+  // This effect (re)sets the refreshInterval whenever the recording state or the refresh time changes.
+  // This needs to be done with useEffect because refresh() (the refreshInterval callback) accesses the audioRecorder
+  // state, which needs to be instantiated with a value before setting the interval.
+  useEffect(() => {
+    if(refreshInterval) {
+      clearInterval(refreshInterval)
     }
+    // if audioRecorder exists (i.e. the recording has been initiated at least once) and the audioRecorder is recording,
+    // set the refresh interval
+    if(audioRecorder && isRecording) {
+      setRefreshInterval(setInterval(async () => await refresh(), refreshTime * 1000))
+    }
+  }, [isRecording, refreshTime])
+
+  async function refresh() {
+    await audioRecorder?.refreshAndGetResult()
   }
 
   return (
@@ -79,7 +88,7 @@ export function RecorderCard() {
               <p>The number of seconds after which the emotion in your voice is re-evaluated</p>
             </TooltipContent>
           </Tooltip>
-          <Select value={refreshTime.toString()} onValueChange={changeRefreshTime}>
+          <Select value={refreshTime.toString()} onValueChange={(newTime) => setRefreshTime(parseInt(newTime))}>
             <SelectTrigger className="w-full" id="refresh-time">
               <SelectValue placeholder="Refresh time" />
             </SelectTrigger>

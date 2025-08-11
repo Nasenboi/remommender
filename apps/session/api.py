@@ -1,13 +1,15 @@
 from ninja import Router
 from ninja.responses import Response
 
+from .models import SessionData
+
 router = Router()
 
 
 @router.post("/start")
 def start_session(request) -> Response:
     session = request.session
-    session["songs_played"] = []
+    session["data"] = SessionData()
     session.save()
     return {"session_key": session.session_key, "message": "Session started"}
 
@@ -22,6 +24,6 @@ def end_session(request) -> Response:
 @router.post("/clear")
 def clear_session(request) -> Response:
     session = request.session
-    session["songs_played"] = []
+    session["data"] = SessionData()
     session.save()
     return {"message": "Session cleared"}
