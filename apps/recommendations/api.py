@@ -53,9 +53,9 @@ def recommend_from_speech(
 
     session_data = update_session_data(emotion_features.valence, emotion_features.arousal, session_data)
 
-    session_data.old_mean, switch_probablity = calculate_array_switch_probability(session_data)
+    session_data["old_mean"], switch_probability = calculate_array_switch_probability(session_data)
 
-    song = get_song_recommendation(playlist, session_data.songs_played)
+    song = get_song_recommendation(playlist, session_data["songs_played"])
 
     # save updated session data
     request.session["session_data"] = session_data
@@ -63,5 +63,5 @@ def recommend_from_speech(
     return RecommendFromSpeechResponseSchema(
         song=song,
         features=features,
-        switch_probability=switch_probablity,
+        switch_probability=switch_probability,
     )

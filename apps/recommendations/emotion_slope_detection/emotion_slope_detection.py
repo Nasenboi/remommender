@@ -49,21 +49,21 @@ def update_sample_index(sample_index: int) -> int:
 
 def get_slope_probablity(
     samples: Tuple[List[float], List[float]], old_mean: Tuple[float, float]
-) -> Tuple[float, float]:
+) -> Tuple[Tuple[float, float], float]:
     """
     Get the slope probability based on the valence and arousal values.
     :param valence: Valence value
     :param arousal: Arousal value
-    :return: Tuple of the mean and the slope probability
+    :return: Tuple of the mean values and the slope probability
     """
 
     samples_array = np.column_stack(samples)
 
-    mean = _get_welford_values(samples_array)[0]
+    mean: np.ndarray = _get_welford_values(samples_array)[0]
 
     delta = np.sum(np.abs(mean - old_mean)) / 2
 
     slope_probability = math.tanh((delta - SLOPE_DETECTOR_THRESHOLD) * SLOPE_DETECTOR_GAIN)
     slope_probability = min(max(slope_probability, 0), 1.0)
 
-    return mean, slope_probability
+    return tuple(mean.tolist()), slope_probability
