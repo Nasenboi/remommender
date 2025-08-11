@@ -62,6 +62,6 @@ def get_song_recommendation(
     :return: A SongSchema object representing the recommended song.
     """
     for song in playlist:
-        if song.id not in songs_played:
+        if str(song.id) not in songs_played:
             return song
     return playlist[0] if playlist else None

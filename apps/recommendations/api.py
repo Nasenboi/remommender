@@ -33,7 +33,7 @@ def recommend_from_speech(
     voice: Optional[float] = None,
     bpm: Optional[float] = None,
 ):
-    session_data = request.session.get("session_data", SessionData().model_dump())
+    session_data = request.session.get("data", SessionData().model_dump())
 
     emotion_features = get_emotion_features_from_speech(file)
 
@@ -58,7 +58,7 @@ def recommend_from_speech(
     song = get_song_recommendation(playlist, session_data["songs_played"])
 
     # save updated session data
-    request.session["session_data"] = session_data
+    request.session["data"] = session_data
 
     return RecommendFromSpeechResponseSchema(
         song=song,
