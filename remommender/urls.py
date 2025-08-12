@@ -15,20 +15,27 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 
+from django.conf import settings
+from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path
 from ninja import NinjaAPI
 
 from apps.recommendations.api import router as recommendations_router
 from apps.session.api import router as session_router
-from apps.test.api import router as test_router
+from apps.songs.api import router as songs_router
 
-api = NinjaAPI()
+api = NinjaAPI(
+    title="Remommender API",
+    version="0.0.0",
+    description="Thanks for reading the documentation!",
+)
+
 api.add_router("/recommend/", recommendations_router)
 api.add_router("/session/", session_router)
-api.add_router("/test/", test_router)
+api.add_router("/song/", songs_router)
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("", api.urls),
-]
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
