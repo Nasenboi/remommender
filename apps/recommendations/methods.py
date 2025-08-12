@@ -6,7 +6,7 @@ from apps.core.schemas import Playlist, SongSchema
 from apps.session.schemas import SessionData
 
 from .emotion_recognition.processor import SERProcessor
-from .emotion_slope_detection.emotion_slope_detection import get_slope_probablity, update_sample_index, update_samples
+from .emotion_slope_detection.emotion_slope_detection import get_slope_probability, update_samples
 from .schemas import EmotionFeaturesSchema
 
 serprocessor = SERProcessor()
@@ -34,8 +34,7 @@ def update_session_data(valence: float, arousal: float, session_data: SessionDat
     :param session_data: Current session data
     :return: Updated session data
     """
-    session_data["samples"] = update_samples(valence, arousal, session_data["samples"], session_data["sample_index"])
-    session_data["sample_index"] = update_sample_index(session_data["sample_index"])
+    session_data["samples"] = update_samples(valence, arousal, session_data["samples"])
     return session_data
 
 
@@ -48,7 +47,7 @@ def calculate_array_switch_probability(
     :return: The calculated welford mean value and the switch probability as a float (0-1)
     """
 
-    return get_slope_probablity(session_data["samples"], session_data["old_mean"])
+    return get_slope_probability(session_data["samples"], session_data["old_mean"])
 
 
 def get_song_recommendation(

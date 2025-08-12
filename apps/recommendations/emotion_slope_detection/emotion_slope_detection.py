@@ -23,31 +23,21 @@ def _get_welford_values(samples: np.ndarray) -> np.ndarray:
 
 
 def update_samples(
-    valence: float, arousal: float, samples: Tuple[List[float], List[float]], sample_index: int
+    valence: float, arousal: float, samples: Tuple[List[float], List[float]]
 ) -> Tuple[List[float], List[float]]:
     """
     Update the samples with the new valence and arousal values.
     :param valence: Valence value
     :param arousal: Arousal value
     :param samples: Tuple of lists containing valence and arousal values
-    :param sample_index: Current sample index
     :return: Updated samples
     """
-    samples[0][sample_index] = valence
-    samples[1][sample_index] = arousal
+    samples[0] = samples[0][1:] + [valence]
+    samples[1] = samples[1][1:] + [arousal]
     return samples
 
 
-def update_sample_index(sample_index: int) -> int:
-    """
-    Update the sample index for the circular buffer.
-    :param sample_index: Current sample index
-    :return: Updated sample index
-    """
-    return (sample_index + 1) % EMOTION_VALUES_WINDOW_SIZE
-
-
-def get_slope_probablity(
+def get_slope_probability(
     samples: Tuple[List[float], List[float]], old_mean: Tuple[float, float]
 ) -> Tuple[Tuple[float, float], float]:
     """

@@ -7,7 +7,6 @@ from apps.core.consts import EMOTION_VALUES_WINDOW_SIZE
 
 class SessionData(Schema):
     songs_played: Optional[List[str]] = list()
-    sample_index: Optional[int] = 0
     samples: Optional[Tuple[List[float], List[float]]] = (
         [0.5] * EMOTION_VALUES_WINDOW_SIZE,
         [0.5] * EMOTION_VALUES_WINDOW_SIZE,
