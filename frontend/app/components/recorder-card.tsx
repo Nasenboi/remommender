@@ -75,7 +75,7 @@ export function RecorderCard() {
           <Button className="rounded-full w-14 h-14" size="icon" onClick={recordToggle}>
             { isRecording
               ? <Pause className="size-6 text-red-600"></Pause>
-              : <Mic className="size-6 text-gray-600"></Mic>
+              : <Mic className="size-6 text-white dark:text-gray-600"></Mic>
             }
           </Button>
         </div>
