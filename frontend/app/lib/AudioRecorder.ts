@@ -10,13 +10,11 @@ export default class AudioRecorder {
   private mediaStream: MediaStream | null
   private mediaRecorder: MediaRecorder | null
   private audioBuffer: Blob[]
-  private recording: boolean
 
   private constructor() {
     this.mediaStream = null
     this.mediaRecorder = null
     this.audioBuffer = []
-    this.recording = false
   }
 
   public static async createRecorder(): Promise<AudioRecorder> {
@@ -26,8 +24,23 @@ export default class AudioRecorder {
   }
 
   public async start(): Promise<void> {
+    if(!this.mediaStream!.active) {
+      await this.initAudio()
+    }
     this.mediaRecorder?.start(500)
-    this.recording = true
+  }
+
+  private initMediaRecorder(): void {
+    if(!this.mediaStream) {
+      throw "MediaStream object does not exist - have you called initAudio() first?"
+    }
+
+    this.mediaRecorder = new MediaRecorder(this.mediaStream)
+    this.mediaRecorder.ondataavailable = (e) => {
+      if (e.data.size > 0) {
+        this.audioBuffer.push(e.data)
+      }
+    }
   }
 
   private async initAudio(): Promise<void> {
@@ -35,12 +48,7 @@ export default class AudioRecorder {
       this.mediaStream = await navigator.mediaDevices.getUserMedia(
         {audio: true}
       )
-      this.mediaRecorder = new MediaRecorder(this.mediaStream)
-      this.mediaRecorder.ondataavailable = (e) => {
-        if (e.data.size > 0) {
-          this.audioBuffer.push(e.data)
-        }
-      }
+      this.initMediaRecorder()
     } catch (e) {
       console.error(e) // TODO: implement proper error handling
     }
@@ -50,11 +58,6 @@ export default class AudioRecorder {
     const recordedBlob = new Blob(
       audioBuffer, { type: mimeType }
     )
-    const url = URL.createObjectURL(recordedBlob);
-    const audio = document.createElement('audio');
-    audio.src = url;
-    audio.controls = true;
-    document.body.appendChild(audio);
     const formData = new FormData()
     formData.append('file', recordedBlob)
     const response = await backend.post('/recommend/from-speech', formData, {
@@ -68,16 +71,27 @@ export default class AudioRecorder {
     this.audioBuffer = []
   }
 
-  public async refreshAndGetResult(): Promise<void> {
-    if(!this.mediaRecorder) {
+  public async refreshAndGetResult(): Promise<AudioResult> {
+    if (!this.mediaRecorder) {
       throw "MediaRecorder object does not exist - have you called initAudio() first?"
     }
 
-    this.mediaRecorder.stop()
-    const result = AudioRecorder.sendAudioAndGetResult(this.audioBuffer, this.mediaRecorder.mimeType)
-    this.clearBuffer()
-    this.mediaRecorder.start(500)
-    return await result
+    return new Promise<AudioResult>((resolve, reject) => {
+      this.mediaRecorder!.onstop = async () => {
+        let result: AudioResult
+        try {
+          result = AudioRecorder.sendAudioAndGetResult(this.audioBuffer, this.mediaRecorder!.mimeType)
+          this.clearBuffer()
+          this.initMediaRecorder()
+          this.mediaRecorder!.start(500)
+          resolve(result)
+        } catch (error) {
+          console.error("Error sending audio:", error)
+          reject(error)
+        }
+      }
+      this.mediaRecorder!.stop()
+    })
   }
 
   public stop(): void {
@@ -85,10 +99,5 @@ export default class AudioRecorder {
     this.mediaStream?.getTracks().forEach((track) => {
       track.stop()
     })
-    this.recording = false
-  }
-
-  public isRecording(): boolean {
-    return this.recording
   }
 }
