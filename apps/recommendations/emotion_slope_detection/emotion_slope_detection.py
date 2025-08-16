@@ -32,9 +32,9 @@ def update_samples(
     :param samples: Tuple of lists containing valence and arousal values
     :return: Updated samples
     """
-    samples[0] = samples[0][1:] + [valence]
-    samples[1] = samples[1][1:] + [arousal]
-    return samples
+    samples_valence = samples[0][1:] + [valence]
+    samples_arousal = samples[1][1:] + [arousal]
+    return samples_valence, samples_arousal
 
 
 def get_slope_probability(
