@@ -1,9 +1,12 @@
-"use client"
+'use client'
 
-import {backend} from "~/lib/APIRequests"
+import {backend} from '~/lib/APIRequests'
+import type {Song} from '~/lib/AudioTypes'
 
 type AudioResult = {
-
+  song: Song
+  features: any //TODO
+  switch_probability: number
 }
 
 export default class AudioRecorder {
@@ -54,13 +57,13 @@ export default class AudioRecorder {
     }
   }
 
-  private static async sendAudioAndGetResult(audioBuffer: Blob[], mimeType: string): Promise<void> {
+  private static async sendAudioAndGetResult(audioBuffer: Blob[], mimeType: string): Promise<AudioResult> {
     const recordedBlob = new Blob(
       audioBuffer, { type: mimeType }
     )
     const formData = new FormData()
     formData.append('file', recordedBlob)
-    const response = await backend.post('/recommend/from-speech', formData, {
+    return await backend.post<FormData, AudioResult>('/recommend/from-speech', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -78,13 +81,13 @@ export default class AudioRecorder {
 
     return new Promise<AudioResult>((resolve, reject) => {
       this.mediaRecorder!.onstop = async () => {
-        let result: AudioResult
+        let result: Promise<AudioResult>
         try {
           result = AudioRecorder.sendAudioAndGetResult(this.audioBuffer, this.mediaRecorder!.mimeType)
           this.clearBuffer()
           this.initMediaRecorder()
           this.mediaRecorder!.start(500)
-          resolve(result)
+          resolve(await result)
         } catch (error) {
           console.error("Error sending audio:", error)
           reject(error)
