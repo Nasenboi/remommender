@@ -1,5 +1,6 @@
 import type { Route } from "./+types/home";
 import {RecorderCard} from "~/components/recorder-card";
+import {Sidebar} from '~/components/ui/sidebar'
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -10,7 +11,7 @@ export function meta({}: Route.MetaArgs) {
 
 export default function Home() {
   return (
-    <div className="flex items-center justify-center h-screen">
+    <div className="flex items-center justify-center w-full flex-1">
       <RecorderCard></RecorderCard>
     </div>
   )
