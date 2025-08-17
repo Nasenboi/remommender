@@ -13,6 +13,7 @@ import {ThemeProvider} from "~/components/theming/theme-provider";
 import {ModeToggle} from "~/components/theming/mode-toggle";
 import {SidebarProvider, SidebarTrigger} from '~/components/ui/sidebar'
 import {AppSidebar} from '~/components/app-sidebar'
+import {AudioPlayer} from '~/components/audio-player'
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -38,18 +39,16 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <Links />
         </head>
         <body className="min-w-full min-h-screen">
-          <SidebarProvider>
-          <AppSidebar />
-          <main className="w-full relative flex flex-col bg-background">
-            <SidebarTrigger />
-            <div className="absolute top-2 right-2"><ModeToggle></ModeToggle></div>
-            {children}
-            <div className="w-full h-20 sticky bottom-0 left-0 right-0 border-t-2 bg-background border-sidebar-border p-2">
-
-            </div>
-            <ScrollRestoration />
-            <Scripts />
-          </main>
+          <SidebarProvider defaultOpen={false}>
+            <AppSidebar />
+            <main className="w-full relative flex flex-col bg-background">
+              <SidebarTrigger className="mt-2 ml-2" />
+              <div className="absolute top-2 right-2"><ModeToggle></ModeToggle></div>
+              {children}
+              <AudioPlayer />
+              <ScrollRestoration />
+              <Scripts />
+            </main>
           </SidebarProvider>
         </body>
       </html>
