@@ -3,7 +3,7 @@
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "./ui/card";
 import {Button} from "~/components/ui/button";
 import {Mic, Pause} from "lucide-react";
-import React, {useEffect, useState} from "react";
+import React, {useEffect, useRef, useState} from 'react'
 import AudioRecorder from "~/lib/AudioRecorder";
 import {
   Select,
@@ -16,17 +16,19 @@ import {
 } from "~/components/ui/select";
 import {Tooltip, TooltipContent, TooltipTrigger} from "~/components/ui/tooltip";
 import {Label} from "~/components/ui/label";
+import {useAudioContext} from '~/context/audio-context'
 
 export function RecorderCard() {
   const [ isRecording, setIsRecording ] = useState<boolean>(false)
   const [ refreshTime, setRefreshTime ] = useState<number>(10)
-  const [ audioRecorder, setAudioRecorder ] = useState<AudioRecorder | null>(null)
+  const audioRecorder = useRef<AudioRecorder | null>(null)
   const [ refreshInterval, setRefreshInterval ] = useState<any>(null)
+  const { currentSong, setCurrentSong } = useAudioContext()
 
   function recordToggle(e : React.MouseEvent<HTMLElement>) {
-    if(!audioRecorder) {
+    if(!audioRecorder.current) {
       AudioRecorder.createRecorder().then((recorderInstance) => {
-        setAudioRecorder(recorderInstance)
+        audioRecorder.current = recorderInstance
         recorderInstance.start().then(() => {
           setIsRecording(true)
         })
@@ -34,10 +36,10 @@ export function RecorderCard() {
       return
     }
     if(isRecording) {
-      audioRecorder?.stop()
+      audioRecorder.current?.stop()
       setIsRecording(false)
     } else {
-      audioRecorder?.start().then(() => {
+      audioRecorder.current?.start().then(() => {
         setIsRecording(true)
       })
     }
@@ -53,12 +55,16 @@ export function RecorderCard() {
     // if audioRecorder exists (i.e. the recording has been initiated at least once) and the audioRecorder is recording,
     // set the refresh interval
     if(audioRecorder && isRecording) {
-      setRefreshInterval(setInterval(async () => await refresh(), refreshTime * 1000))
+      setRefreshInterval(setInterval(() => refresh(), refreshTime * 1000))
     }
   }, [isRecording, refreshTime])
 
-  async function refresh() {
-    await audioRecorder?.refreshAndGetResult()
+  function refresh() {
+    audioRecorder.current?.refreshAndGetResult().then((result) => {
+      if(result.song.id !== currentSong?.id) {
+        setCurrentSong(result.song)
+      }
+    })
   }
 
   return (

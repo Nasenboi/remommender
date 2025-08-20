@@ -2,6 +2,7 @@
 
 import {backend} from '~/lib/APIRequests'
 import type {Song} from '~/lib/AudioTypes'
+import type {AxiosResponse} from 'axios'
 
 type AudioResult = {
   song: Song
@@ -63,11 +64,12 @@ export default class AudioRecorder {
     )
     const formData = new FormData()
     formData.append('file', recordedBlob)
-    return await backend.post<FormData, AudioResult>('/recommend/from-speech', formData, {
+    const response = await backend.post<FormData, AxiosResponse<AudioResult>>('/recommend/from-speech', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
     })
+    return response.data
   }
 
   private clearBuffer(): void {
