@@ -163,3 +163,4 @@ local/
 # Frontend / NodeJS / React-Router
 frontend/node_modules/
 frontend/.react-router/
+frontend/.vite/
