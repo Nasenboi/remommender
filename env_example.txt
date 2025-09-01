@@ -3,3 +3,8 @@ SECRET_KEY = "django-insecure-39yrg+3$9&*%o7nohp@ruihd)d_t%-jdmb_h)@8he*u=43z!hh
 MEDIA_URL = "/media/"
 MEDIA_ROOT = "/cool/folder/root/path"
 SQL_DIR = "/cool/folder/to/db.sqlite3"
+
+# Pre Calculated Data
+PRE_CALC_JSON_PATH = ""/cool/path/to/Audio_jsons"
+PRE_CALC_AUDIO_PATH = ""/cool/path/to/Audio"
+PRE_CALC_ALBUM_ART_PATH = ""/cool/path/to/Album_Art"
