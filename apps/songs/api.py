@@ -47,7 +47,7 @@ def upload_artwork_file(
     if existing_artwork:
         return {"id": existing_artwork.id}
 
-    artwork_file = ArtworkFile.objects.create(album=album, artwork=artwork)
+    artwork_file = ArtworkFile.objects.create(album=album, artwork=artwork, artist=artist)
     return {"id": artwork_file.id}
 
 
@@ -64,9 +64,7 @@ def create_song(
         artwork = None
 
     song = Song.objects.create(
-        **song.model_dump(
-            exclude={"audio_file_id", "artwork_id", "features", "genres"}
-        ),
+        **song.model_dump(exclude={"audio_file_id", "artwork_id", "features", "genres"}),
         features=SongFeatures.objects.create(**song.features.model_dump()),
         genres=SongGenres.objects.create(**song.genres.model_dump()),
         audio_file=audio_file,
