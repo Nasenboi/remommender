@@ -82,20 +82,12 @@ def generate_playlist(
     """
 
     # Use only features that are present in the features object
-    features_search = [
-        key for key, value in features.model_dump().items() if value is not None
-    ]
+    features_search = [key for key, value in features.model_dump().items() if value is not None]
 
     song_id_dimensions = get_song_id_and_dimensions(genre, features=features_search)
-    # top_songs_ids = k_d_tree(song_id_dimensions, inputVector, PLAYLIST_LENGTH)
 
-    # print(song_id_dimensions)
+    top_songs_ids = k_d_tree(data=song_id_dimensions, features=features, numClosestNeighbours=PLAYLIST_LENGTH)
 
-    top_songs_ids = k_d_tree(
-        data=song_id_dimensions, features=features, numClosestNeighbours=PLAYLIST_LENGTH
-    )
-
-    end = time.time()
     playlist = get_song_information(top_IDs=top_songs_ids)
     return playlist
 
