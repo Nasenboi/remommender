@@ -21,8 +21,8 @@ def get_emotion_features_from_speech(file: UploadedFile) -> EmotionFeaturesSchem
     speech_emotion_result = serprocessor.process_audio_file(file)
 
     return EmotionFeaturesSchema(
-        valence=speech_emotion_result.valence,
-        arousal=speech_emotion_result.arousal,
+        valence=speech_emotion_result.valence * 2 - 1,
+        arousal=speech_emotion_result.arousal * 2 - 1,
     )
 
 
