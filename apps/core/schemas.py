@@ -39,7 +39,6 @@ Playlist = List[SongSchema]
 class SongCreateSchema(Schema):
     title: str
     album_id: Optional[UUID] = None
-    audio_file_id: Optional[UUID]
     artist: str
     duration_s: float
     features: SongFeaturesSchema

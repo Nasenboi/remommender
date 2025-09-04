@@ -4,7 +4,7 @@ from typing import Tuple
 
 from django.core.files import File
 
-from apps.core.models import Album, Song, SongFeatures, SongFile, SongGenres
+from apps.core.models import Album, Song, SongFeatures, SongGenres
 
 
 def read_json(name: str) -> dict:
@@ -39,29 +39,16 @@ def convert_song_to_db_format(song: dict) -> Tuple[dict, dict]:
     return db_song, db_album
 
 
-def add_song_to_db(name: str) -> str:
-    """
-    Add a songfile object to db if it does not exist yet.
-    Returns the id of the object.
-    """
-    path = os.path.join(os.getenv("PRE_CALC_AUDIO_PATH"), name)
-    song_file = SongFile.objects.filter(audio_file=name).first()
-    if not song_file:
-        with open(path, "rb") as f:
-            song_file = SongFile.objects.create(audio_file=File(f, name=name))
-    return song_file.id
-
-
-def add_artwork_to_db(name: str, album: str = None, artist: str = None) -> str:
+def add_album_to_db(name: str, album_name: str = None, artist: str = None) -> str:
     """
     Adds an album artwork_file to the db if it does not exist yet.
     Returns the id of the object.
     """
     path = os.path.join(os.getenv("PRE_CALC_ALBUM_ART_PATH"), name)
-    artwork_file = Album.objects.filter(album=album, artist=artist).first()
+    artwork_file = Album.objects.filter(album=album_name, artist=artist).first()
     if not artwork_file:
         with open(path, "rb") as f:
-            artwork_file = Album.objects.create(artwork=File(f, name=name), album=album, artist=artist)
+            artwork_file = Album.objects.create(artwork=File(f, name=name), album=album_name, artist=artist)
     return artwork_file.id
 
 
@@ -85,15 +72,15 @@ def add_json_to_db(name: str) -> str:
         # print(f"Existing {existing_song.title} from {existing_song.artist} found in db!")
         return existing_song.id
     try:
-        song_file_id = add_song_to_db(raw_data["ids"]["track_id"])
-        artwork_id = add_artwork_to_db(raw_data["ids"]["artwork_id"], db_album["album"], db_album["artist"])
+        album_id = add_album_to_db(raw_data["ids"]["artwork_id"], db_album["album"], db_album["artist"])
+        song_path = os.path.join(os.getenv("PRE_CALC_AUDIO_PATH"), raw_data["ids"]["track_id"])
+        with open(song_path, "rb") as f:
+            audio_file = File(f, name=raw_data["ids"]["track_id"])
     except FileNotFoundError as e:
         print(f"File not found: {e}")
         return None
 
-    audio_file = SongFile.objects.get(id=song_file_id)
-
-    artwork_file = Album.objects.get(id=artwork_id)
+    album = Album.objects.get(id=album_id)
 
     keys_to_exclude = ["audio_file_id", "artwork_id", "features", "genres"]
     song = Song.objects.create(
@@ -101,7 +88,8 @@ def add_json_to_db(name: str) -> str:
         features=SongFeatures.objects.create(**db_song["features"]),
         genres=SongGenres.objects.create(**db_song["genres"]),
         audio_file=audio_file,
-        artwork=artwork,
+        album=album,
+        audio_file=audio_file,
     )
     print(f"Added {song.title} from {song.artist} to db!")
     return song.id

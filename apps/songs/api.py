@@ -1,14 +1,8 @@
-import os
-from typing import Optional
-
-from django.conf import settings
 from ninja import File, Form, Router
 from ninja.errors import ValidationError
 from ninja.files import UploadedFile
-from ninja.pagination import paginate, PageNumberPagination
-from uuid import UUID
 
-from apps.core.models import Album, Song, SongFeatures, SongFile, SongGenres
+from apps.core.models import Album, Song, SongFeatures, SongGenres
 from apps.core.schemas import SongCreateSchema, SongSchema
 
 songs_router = Router(tags=["songs"])
@@ -35,12 +29,11 @@ def upload_album(
     return {"id": album.id}
 
 @songs_router.post("/")
-def create_song(
+def create_and_upload_song(
     request,
-    song: SongCreateSchema,
+    audio_file: UploadedFile = File(...),
+    song: SongCreateSchema = Form(...),
 ):
-    audio_file = SongFile.objects.get(id=song.audio_file_id)
-
     if song.album_id:
         album = Album.objects.get(id=song.album_id)
     else:
@@ -55,23 +48,6 @@ def create_song(
     )
 
     return SongSchema.from_orm(song)
-
-@songs_router.post("/files/")
-def upload_song_file(
-    request,
-    audio_file: UploadedFile = File(...),
-):
-    if not audio_file.name.endswith((".mp3", ".wav")):
-        raise ValidationError("Unsupported file format. Please upload an audio file.")
-
-    # Could be weird if two different songs have the same file name
-    # But this will never happen right? :D
-    existing_songfile = SongFile.objects.filter(audio_file=audio_file.name).first()
-    if existing_songfile:
-        return {"id": existing_songfile.id}
-
-    song_file = SongFile.objects.create(audio_file=audio_file)
-    return {"id": song_file.id}
 
 
 

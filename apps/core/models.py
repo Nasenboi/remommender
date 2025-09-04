@@ -54,15 +54,7 @@ class Album(models.Model):
 
     def __str__(self):
         return f"Artwork {self.id}"
-
-
-class SongFile(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    audio_file = models.FileField(upload_to="Audio/")
-
-    def __str__(self):
-        return f"Song File {self.id}"
-
+    
 
 class Song(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -82,9 +74,7 @@ class Song(models.Model):
         null=True,
         blank=True,
     )
-    audio_file = models.ForeignKey(
-        SongFile, on_delete=models.CASCADE, related_name="songs"
-    )
+    audio_file = models.FileField(upload_to="Audio/")
 
     def __str__(self):
         return f"{self.title} by {self.artist}" + (
@@ -100,7 +90,7 @@ class Song(models.Model):
     @property
     def song_url(self):
         if self.audio_file:
-            return self.audio_file.audio_file.url
+            return self.audio_file.url
         return None
 
     @property
