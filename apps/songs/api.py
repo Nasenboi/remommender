@@ -12,7 +12,7 @@ from apps.core.schemas import SongCreateSchema, SongSchema
 router = Router(tags=["songs"])
 
 
-@router.post("/song-file/")
+@router.post("/song-files/")
 def upload_song_file(
     request,
     audio_file: UploadedFile = File(...),

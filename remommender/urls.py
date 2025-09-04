@@ -33,7 +33,7 @@ api = NinjaAPI(
 
 api.add_router("/recommend/", recommendations_router)
 api.add_router("/session/", session_router)
-api.add_router("/song/", songs_router)
+api.add_router("/songs/", songs_router)
 
 urlpatterns = [
     path("admin/", admin.site.urls),
