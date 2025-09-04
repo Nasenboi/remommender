@@ -55,6 +55,11 @@ class Album(models.Model):
     def __str__(self):
         return f"Artwork {self.id}"
     
+    @property
+    def artwork_url(self):
+        if self.artwork_file:
+            return self.artwork_file.url
+        return None
 
 class Song(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)

@@ -1,9 +1,14 @@
 from ninja import File, Form, Router
 from ninja.errors import ValidationError
 from ninja.files import UploadedFile
+from typing import List
+from ninja.pagination import paginate, PageNumberPagination
+from uuid import UUID
 
 from apps.core.models import Album, Song, SongFeatures, SongGenres
-from apps.core.schemas import SongCreateSchema, SongSchema
+from apps.core.schemas import SongCreateSchema, SongSchema, AlbumSchema
+
+from .schemas import AlbumDetailSchema
 
 songs_router = Router(tags=["songs"])
 albums_router = Router(tags=["albums"])
@@ -27,6 +32,22 @@ def upload_album(
 
     album = Album.objects.create(album=album_name, artwork=artwork_file, artist=artist)
     return {"id": album.id}
+
+@albums_router.get("/", response=List[AlbumSchema])
+@paginate(PageNumberPagination, page_size=10)
+def list_albums(request):
+    return Album.objects.all()
+
+@albums_router.get("/{album_id}", response=AlbumDetailSchema)
+def get_album_details(request, album_id: UUID):
+    album = Album.objects.filter(id=album_id).first()
+    if not album:
+        return 404, {"detail": "Album not found"}
+    
+    detail_album = AlbumDetailSchema.from_orm(album)
+    detail_album.songs = Song.objects.filter(album=album)
+
+    return detail_album
 
 @songs_router.post("/")
 def create_and_upload_song(

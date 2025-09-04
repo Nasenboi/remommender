@@ -43,3 +43,10 @@ class SongCreateSchema(Schema):
     duration_s: float
     features: SongFeaturesSchema
     genres: SongGenresSchema
+
+
+class AlbumSchema(Schema):
+    id: UUID
+    album: str
+    artist: str
+    artwork_url: str
