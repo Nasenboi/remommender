@@ -4,7 +4,7 @@ from typing import Tuple
 
 from django.core.files import File
 
-from apps.core.models import ArtworkFile, Song, SongFeatures, SongFile, SongGenres
+from apps.core.models import Album, Song, SongFeatures, SongFile, SongGenres
 
 
 def read_json(name: str) -> dict:
@@ -54,15 +54,15 @@ def add_song_to_db(name: str) -> str:
 
 def add_artwork_to_db(name: str, album: str = None, artist: str = None) -> str:
     """
-    Adds an album artwork to the db if it does not exist yet.
+    Adds an album artwork_file to the db if it does not exist yet.
     Returns the id of the object.
     """
     path = os.path.join(os.getenv("PRE_CALC_ALBUM_ART_PATH"), name)
-    artwork = ArtworkFile.objects.filter(album=album, artist=artist).first()
-    if not artwork:
+    artwork_file = Album.objects.filter(album=album, artist=artist).first()
+    if not artwork_file:
         with open(path, "rb") as f:
-            artwork = ArtworkFile.objects.create(artwork=File(f, name=name), album=album, artist=artist)
-    return artwork.id
+            artwork_file = Album.objects.create(artwork=File(f, name=name), album=album, artist=artist)
+    return artwork_file.id
 
 
 def add_json_to_db(name: str) -> str:
@@ -93,7 +93,7 @@ def add_json_to_db(name: str) -> str:
 
     audio_file = SongFile.objects.get(id=song_file_id)
 
-    artwork = ArtworkFile.objects.get(id=artwork_id)
+    artwork_file = Album.objects.get(id=artwork_id)
 
     keys_to_exclude = ["audio_file_id", "artwork_id", "features", "genres"]
     song = Song.objects.create(
