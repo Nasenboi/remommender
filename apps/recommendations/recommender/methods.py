@@ -14,7 +14,7 @@ from .consts import GENRE_DATA_BASE, PLAYLIST_LENGTH
 
 def get_song_id() -> List[str]:
     """
-    Get all song IDs from the database
+    Get all song IDs from the databas
     :return: List of song IDs.
     """
     song_IDs = []
