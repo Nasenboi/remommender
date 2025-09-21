@@ -59,9 +59,19 @@ export function RecorderCard() {
     }
   }, [isRecording, refreshTime])
 
+  // This ref is necessary because when the refresh() function runs in a set interval, the value of currentSong
+  // does not get updated. This is because variables are captured when creating the interval, i.e. the variable values
+  // are copied and not referenced. To solve this, we have to create a ref which updates alongside the currentSong within
+  // the AudioContext. We can access this ref in the refresh function to check whether the value of currentSong needs to
+  // be updated.
+  const currentSongRef = useRef(currentSong)
+  useEffect(() => {
+    currentSongRef.current = currentSong
+  }, [currentSong])
+
   function refresh() {
     audioRecorder.current?.refreshAndGetResult().then((result) => {
-      if(result.song.id !== currentSong?.id) {
+      if(result.song.id !== currentSongRef.current?.id) {
         setCurrentSong(result.song)
       }
     })
