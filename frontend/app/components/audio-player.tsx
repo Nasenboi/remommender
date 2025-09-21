@@ -3,6 +3,7 @@ import {Button} from '~/components/ui/button'
 import React, {useEffect, useRef, useState} from 'react'
 import {Slider} from '~/components/ui/slider'
 import {useAudioContext} from '~/context/audio-context'
+import type {Song} from '~/lib/AudioTypes'
 
 
 export function AudioPlayer() {
@@ -11,19 +12,27 @@ export function AudioPlayer() {
 
   const [ isPlaying, setIsPlaying ] = useState<boolean>(false)
   const audioRef = useRef<HTMLAudioElement | null>(null)
+  const prevSongRef = useRef<Song | null>(null)
 
   function getAbsoluteBackendURL(relativeURL: string) {
     return import.meta.env.VITE_BACKEND_BASE_URL + relativeURL
   }
 
   useEffect(() => {
-    if(!currentSong) {
-      setIsPlaying(false)
+
+    // change from null to an actual song -> start playing automatically
+    if((!prevSongRef.current && currentSong) || (currentSong && isPlaying)) {
+      audioRef.current?.play().then(() => {
+        setIsPlaying(true)
+      }).catch((err) => {
+        console.error("Error with playing the music automatically:", err)
+      })
     } else {
-      if(isPlaying) {
-        audioRef.current?.play()
-      }
+      setIsPlaying(false)
+      audioRef.current?.pause()
     }
+
+    prevSongRef.current = currentSong
   }, [currentSong])
 
   function playToggle(e : React.MouseEvent<HTMLElement>) {
@@ -59,27 +68,6 @@ export function AudioPlayer() {
     )
   }
 
-  function ControlsAndAudio() {
-    if (currentSong) {
-      return (
-        <>
-          <audio src={getAbsoluteBackendURL(currentSong?.song_url)} loop ref={audioRef}></audio>
-          <Button className="rounded-full w-9 h-9" size="icon" onClick={playToggle}>
-            {isPlaying
-              ? <Pause className="size-5 text-white dark:text-zinc-600"/>
-              : <Play className="size-5 text-white dark:text-zinc-600"/>}
-          </Button>
-        </>
-      )
-    } else {
-      return (
-        <Button className="rounded-full w-9 h-9" disabled size="icon">
-          <Play className="size-5 text-white dark:text-zinc-600"/>
-        </Button>
-      )
-    }
-  }
-
   return (
     <div className="w-full h-20 sticky bottom-0 left-0 right-0 border-t-2 bg-background border-sidebar-border">
       <div className="absolute left-2 top-1/2 -translate-y-1/2 flex items-center h-full pt-2 pb-2">
@@ -91,7 +79,16 @@ export function AudioPlayer() {
         </div>
       </div>
       <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-        <ControlsAndAudio />
+        <audio
+          ref={audioRef}
+          src={currentSong ? getAbsoluteBackendURL(currentSong.song_url) : undefined}
+          loop
+        />
+        <Button className="rounded-full w-9 h-9" size="icon" onClick={playToggle}>
+          {isPlaying
+            ? <Pause className="size-5 text-white dark:text-zinc-600"/>
+            : <Play className="size-5 text-white dark:text-zinc-600"/>}
+        </Button>
       </div>
       <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center h-full">
         <Volume2 className="size-5 text-primary mr-2" />

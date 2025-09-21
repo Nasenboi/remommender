@@ -38,6 +38,7 @@ export function RecorderCard() {
     if(isRecording) {
       audioRecorder.current?.stop()
       setIsRecording(false)
+      setCurrentSong(null)
     } else {
       audioRecorder.current?.start().then(() => {
         setIsRecording(true)
