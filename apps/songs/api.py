@@ -4,11 +4,15 @@ from ninja.files import UploadedFile
 from typing import List
 from ninja.pagination import paginate, PageNumberPagination
 from uuid import UUID
+import tempfile
+import os
 
 from apps.core.models import Album, Song, SongFeatures, SongGenres
-from apps.core.schemas import SongCreateSchema, SongSchema, AlbumSchema
+from apps.core.schemas import SongCreateSchema, SongSchema, AlbumSchema, SongGenresSchema, SongFeaturesSchema
 
 from .schemas import AlbumDetailSchema
+
+from feature_extraction.song_info_extractor import SongInfoExtractor
 
 songs_router = Router(tags=["songs"])
 albums_router = Router(tags=["albums"])
@@ -59,6 +63,37 @@ def create_and_upload_song(
         album = Album.objects.get(id=song.album_id)
     else:
         album = None
+
+    # calculate features if not present:
+    if not song.feautes or not song.genres:
+        # ToDo: Move to methods
+        with tempfile.NamedTemporaryFile(delete=True, suffix=os.path.splitext(audio_file.filename)[1]) as tmp_file:
+                # Write uploaded file content to temporary file
+                tmp_file.write(audio_file.file.read())
+                tmp_path = tmp_file.name
+
+                song_info_extractor = SongInfoExtractor(tmp_path)
+                song.duration_s = song_info_extractor.get_duration()
+                all_features = song_info_extractor.extract_all_features()
+                print(all_features)
+                """
+                ToDo: ...
+                song.genres = SongGenresSchema(
+                    all_genres = all_features["statistics"]["genres"]["all_genres"],
+                    top3_genres= all_features["statistics"]["genres"]["top3_genres"]
+                )
+                song.features = SongFeaturesSchema(
+                    valence = all_features["features"][""],
+                    arousal = all_features["features"][""],
+                    authenticity = all_features["features"][""],
+                    timeliness = all_features["features"][""],
+                    complexity = all_features["features"][""],
+                    danceability = all_features["features"][""],
+                    tonal = all_features["features"][""],
+                    voice = all_features["features"][""],
+                    bpm = all_features["features"][""],
+                )
+                """
 
     song = Song.objects.create(
         **song.model_dump(exclude={"audio_file_id", "artwork_id", "features", "genres"}),
