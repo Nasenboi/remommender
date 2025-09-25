@@ -4,7 +4,7 @@ from typing import List, Tuple
 import numpy as np
 from welford import Welford
 
-from apps.core.consts import EMOTION_VALUES_WINDOW_SIZE, SLOPE_DETECTOR_GAIN, SLOPE_DETECTOR_THRESHOLD
+from apps.core.consts import SLOPE_DETECTOR_GAIN, SLOPE_DETECTOR_THRESHOLD
 
 
 def _get_welford_values(samples: np.ndarray) -> np.ndarray:
