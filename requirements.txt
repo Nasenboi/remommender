@@ -1,4 +1,4 @@
-# pip install tensorflow librosa django-ninja scikit-learn dotenv welford typing annoy transformers pandas torch
+# pip install tensorflow librosa django-ninja scikit-learn dotenv welford typing annoy transformers pandas torch essentia
 absl-py==2.3.1
 annotated-types==0.7.0
 annoy==1.17.3
@@ -12,6 +12,7 @@ decorator==5.2.1
 Django==4.2.24
 django-ninja==1.4.3
 dotenv==0.9.9
+essentia==2.1b6.dev1389
 filelock==3.19.1
 flatbuffers==25.2.10
 fsspec==2025.9.0
