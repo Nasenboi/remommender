@@ -1,6 +1,6 @@
 FROM python:3.13-slim
 
-# SQL_DIR is automatically set in settings.py to:
+# SQL_PATH is automatically set in settings.py to:
 # /remommender/db.sqlite3
 # Those two are required by settings,
 # but not if the image is isolated and cozy

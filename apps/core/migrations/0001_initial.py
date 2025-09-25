@@ -14,7 +14,7 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='ArtworkFile',
+            name='Album',
             fields=[
                 ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
                 ('artwork', models.FileField(upload_to='Album_Art/')),
@@ -59,7 +59,7 @@ class Migration(migrations.Migration):
                 ('title', models.CharField(max_length=255)),
                 ('artist', models.CharField(max_length=255)),
                 ('duration_s', models.FloatField()),
-                ('artwork', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='songs', to='core.artworkfile')),
+                ('artwork', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='songs', to='core.Album')),
                 ('audio_file', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='songs', to='core.songfile')),
                 ('features', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='song', to='core.songfeatures')),
                 ('genres', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='song', to='core.songgenres')),

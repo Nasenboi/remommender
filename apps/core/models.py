@@ -46,23 +46,20 @@ class SongGenres(models.Model):
     all_genres = models.JSONField(default=dict)
 
 
-class ArtworkFile(models.Model):
+class Album(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    artwork = models.FileField(upload_to="Album_Art/")
+    artwork_file = models.FileField(upload_to="Album_Art/")
     album = models.CharField(max_length=255, null=True, blank=True)
     artist = models.CharField(max_length=255, null=True, blank=True)
 
     def __str__(self):
         return f"Artwork {self.id}"
-
-
-class SongFile(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    audio_file = models.FileField(upload_to="Audio/")
-
-    def __str__(self):
-        return f"Song File {self.id}"
-
+    
+    @property
+    def artwork_url(self):
+        if self.artwork_file:
+            return self.artwork_file.url
+        return None
 
 class Song(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -75,36 +72,34 @@ class Song(models.Model):
     genres = models.OneToOneField(
         SongGenres, on_delete=models.CASCADE, related_name="song"
     )
-    artwork = models.ForeignKey(
-        ArtworkFile,
+    album = models.ForeignKey(
+        Album,
         on_delete=models.CASCADE,
         related_name="songs",
         null=True,
         blank=True,
     )
-    audio_file = models.ForeignKey(
-        SongFile, on_delete=models.CASCADE, related_name="songs"
-    )
+    audio_file = models.FileField(upload_to="Audio/")
 
     def __str__(self):
         return f"{self.title} by {self.artist}" + (
-            f" from {self.album}" if self.album else ""
+            f" from {self.album_name}" if self.album_name else ""
         )
 
     @property
-    def album(self):
-        if self.artwork:
-            return self.artwork.album
+    def album_name(self):
+        if self.album:
+            return self.album.album
         return None
 
     @property
     def song_url(self):
         if self.audio_file:
-            return self.audio_file.audio_file.url
+            return self.audio_file.url
         return None
 
     @property
     def artwork_url(self):
-        if self.artwork:
-            return self.artwork.artwork.url
+        if self.album:
+            return self.album.artwork_file.url
         return None

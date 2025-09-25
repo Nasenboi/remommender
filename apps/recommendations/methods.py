@@ -21,8 +21,8 @@ def get_emotion_features_from_speech(file: UploadedFile) -> EmotionFeaturesSchem
     speech_emotion_result = serprocessor.process_audio_file(file)
 
     return EmotionFeaturesSchema(
-        valence=speech_emotion_result.valence,
-        arousal=speech_emotion_result.arousal,
+        valence=speech_emotion_result.valence * 2 - 1,
+        arousal=speech_emotion_result.arousal * 2 - 1,
     )
 
 
@@ -39,15 +39,17 @@ def update_session_data(valence: float, arousal: float, session_data: SessionDat
 
 
 def calculate_array_switch_probability(
-    session_data: SessionData,
+    session_data: SessionData, arousal_weight: float = 0.5, valence_weight: float = 0.5
 ) -> Tuple[float, float]:
     """
     Calculate the probability that a song should switch for a single array.
-    :param values: List of TimeStampFloat values, containing valence or arousal information
+    :param session_data: Current session data
+    :param arousal_weight: Weight for arousal value (default: 0.5)
+    :param valence_weight: Weight for valence value (default: 0.5)    
     :return: The calculated welford mean value and the switch probability as a float (0-1)
     """
 
-    return get_slope_probability(session_data["samples"], session_data["old_mean"])
+    return get_slope_probability(session_data["samples"], session_data["old_mean"], arousal_weight, valence_weight)
 
 
 def get_song_recommendation(

@@ -35,7 +35,8 @@ if [ "$RESET_DB" = true ]; then
 fi
 
 echo "<< Updating the database schema >>"
-python manage.py makemigrations --no-input
+# Make migrations best done manually ^^"
+# python manage.py makemigrations --no-input
 python manage.py migrate --no-input
 
 echo "<< Starting the Django development server >>"
