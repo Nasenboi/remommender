@@ -31,6 +31,8 @@ def recommend_from_speech(
     tonal: Optional[float] = None,
     voice: Optional[float] = None,
     bpm: Optional[float] = None,
+    arousal_weight: Optional[float] = 0.5,
+    valence_weight: Optional[float] = 0.5,
 ):
     session_data = request.session.get("data", SessionData().model_dump())
 
@@ -52,7 +54,7 @@ def recommend_from_speech(
 
     session_data = update_session_data(emotion_features.valence, emotion_features.arousal, session_data)
 
-    session_data["old_mean"], switch_probability = calculate_array_switch_probability(session_data)
+    session_data["old_mean"], switch_probability = calculate_array_switch_probability(session_data, arousal_weight, valence_weight)
 
     song = get_song_recommendation(playlist, session_data["songs_played"])
 

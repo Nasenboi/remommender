@@ -23,7 +23,7 @@ from ninja import NinjaAPI
 
 from apps.recommendations.api import router as recommendations_router
 from apps.session.api import router as session_router
-from apps.songs.api import router as songs_router
+from apps.songs.api import songs_router, albums_router
 
 api = NinjaAPI(
     title="Remommender API",
@@ -33,7 +33,8 @@ api = NinjaAPI(
 
 api.add_router("/recommend/", recommendations_router)
 api.add_router("/session/", session_router)
-api.add_router("/song/", songs_router)
+api.add_router("/songs/", songs_router)
+api.add_router("/albums/", albums_router)
 
 urlpatterns = [
     path("admin/", admin.site.urls),
