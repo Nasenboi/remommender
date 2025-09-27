@@ -1,29 +1,39 @@
 "use client"
 
-import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "./ui/card";
-import {Button} from "~/components/ui/button";
-import {Mic, Pause} from "lucide-react";
-import React, {useEffect, useRef, useState} from 'react'
-import AudioRecorder from "~/lib/AudioRecorder";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue
-} from "~/components/ui/select";
-import {Tooltip, TooltipContent, TooltipTrigger} from "~/components/ui/tooltip";
-import {Label} from "~/components/ui/label";
+
 import {useAudioContext} from '~/context/audio-context'
+import {RecorderSettings, type RecorderSettingsState} from '~/components/recorder-settings'
+import React, {useEffect, useRef, useState} from 'react'
+import AudioRecorder from '~/lib/AudioRecorder'
+import {Card, CardContent, CardDescription, CardHeader, CardTitle} from '~/components/ui/card'
+import {Button} from '~/components/ui/button'
+import {Mic, Pause} from 'lucide-react'
 
 export function RecorderCard() {
   const [ isRecording, setIsRecording ] = useState<boolean>(false)
-  const [ refreshTime, setRefreshTime ] = useState<number>(10)
   const audioRecorder = useRef<AudioRecorder | null>(null)
   const [ refreshInterval, setRefreshInterval ] = useState<any>(null)
   const { currentSong, setCurrentSong } = useAudioContext()
+
+  const [settings, setSettings] = useState<RecorderSettingsState>({
+    refreshTime: 20,
+    genreEnabled: false,
+    genre: null,
+    authenticityEnabled: false,
+    authenticity: 0,
+    timelinessEnabled: false,
+    timeliness: 0,
+    complexityEnabled: false,
+    complexity: 0,
+    danceabilityEnabled: false,
+    danceability: 0,
+    tonalEnabled: false,
+    tonal: 0,
+    voiceEnabled: false,
+    voice: 0,
+    bpmEnabled: false,
+    bpm: 120
+  })
 
   function recordToggle(e : React.MouseEvent<HTMLElement>) {
     if(!audioRecorder.current) {
@@ -56,9 +66,9 @@ export function RecorderCard() {
     // if audioRecorder exists (i.e. the recording has been initiated at least once) and the audioRecorder is recording,
     // set the refresh interval
     if(audioRecorder && isRecording) {
-      setRefreshInterval(setInterval(() => refresh(), refreshTime * 1000))
+      setRefreshInterval(setInterval(() => refresh(), settings.refreshTime * 1000))
     }
-  }, [isRecording, refreshTime])
+  }, [isRecording, settings.refreshTime])
 
   // This ref is necessary because when the refresh() function runs in a set interval, the value of currentSong
   // does not get updated. This is because variables are captured when creating the interval, i.e. the variable values
@@ -69,9 +79,14 @@ export function RecorderCard() {
   useEffect(() => {
     currentSongRef.current = currentSong
   }, [currentSong])
+  // same as above, but for the settings
+  const settingsRef = useRef(settings)
+  useEffect(() => {
+    settingsRef.current = settings
+  }, [settings])
 
   function refresh() {
-    audioRecorder.current?.refreshAndGetResult().then((result) => {
+    audioRecorder.current?.refreshAndGetResult(settingsRef.current).then((result) => {
       if(result.song.id !== currentSongRef.current?.id) {
         setCurrentSong(result.song)
       }
@@ -96,30 +111,11 @@ export function RecorderCard() {
             }
           </Button>
         </div>
-        <div className="w-full mt-4">
-          <Tooltip>
-            <TooltipTrigger className="w-full">
-              <Label htmlFor="refresh-time" className="mb-4 font-normal text-muted-foreground">Refresh time:</Label>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>The number of seconds after which the emotion in your voice is re-evaluated</p>
-            </TooltipContent>
-          </Tooltip>
-          <Select value={refreshTime.toString()} onValueChange={(newTime) => setRefreshTime(parseInt(newTime))}>
-            <SelectTrigger className="w-full" id="refresh-time">
-              <SelectValue placeholder="Refresh time" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                <SelectLabel>Seconds</SelectLabel>
-                <SelectItem value="5">5</SelectItem>
-                <SelectItem value="10">10</SelectItem>
-                <SelectItem value="15">15</SelectItem>
-                <SelectItem value="20">20</SelectItem>
-                <SelectItem value="30">30</SelectItem>
-              </SelectGroup>
-            </SelectContent>
-          </Select>
+        <div className="w-full mt-5 text-center">
+          <RecorderSettings
+            settings={settings}
+            setSettings={setSettings}
+          />
         </div>
       </CardContent>
     </Card>

@@ -7,6 +7,7 @@ import { FFmpeg } from '@ffmpeg/ffmpeg'
 import { fetchFile } from '@ffmpeg/util'
 import coreURL from '@ffmpeg/core?url'
 import wasmURL from '@ffmpeg/core/wasm?url'
+import type {RecorderSettingsState} from '~/components/recorder-settings'
 
 type AudioResult = {
   song: Song
@@ -106,7 +107,20 @@ export default class AudioRecorder {
     }
   }
 
-  private async sendAudioAndGetResult(audioBuffer: Blob[], mimeType: string): Promise<AudioResult> {
+  private static buildSettingsQueryString(settings: RecorderSettingsState): string {
+    const params = new URLSearchParams()
+    if (settings.authenticityEnabled) params.append('authenticity', settings.authenticity.toString())
+    if (settings.genreEnabled && settings.genre !== null) params.append('genre', settings.genre)
+    if (settings.timelinessEnabled) params.append('timeliness', settings.timeliness.toString())
+    if (settings.complexityEnabled) params.append('complexity', settings.complexity.toString())
+    if (settings.danceabilityEnabled) params.append('danceability', settings.danceability.toString())
+    if (settings.tonalEnabled) params.append('tonal', settings.tonal.toString())
+    if (settings.voiceEnabled) params.append('voice', settings.voice.toString())
+    if (settings.bpmEnabled) params.append('bpm', settings.bpm.toString())
+    return params.toString()
+  }
+
+  private async sendAudioAndGetResult(audioBuffer: Blob[], mimeType: string, settings: RecorderSettingsState): Promise<AudioResult> {
     const recordedBlob = new Blob(
       audioBuffer, { type: mimeType }
     )
@@ -115,8 +129,12 @@ export default class AudioRecorder {
       resultBlob = await this.converter.convertToWav(recordedBlob)
     }
     const formData = new FormData()
+    // send audio
     formData.append('file', resultBlob)
-    const response = await backend.post<FormData, AxiosResponse<AudioResult>>('/recommend/from-speech', formData, {
+
+    const queryString = AudioRecorder.buildSettingsQueryString(settings)
+
+    const response = await backend.post<FormData, AxiosResponse<AudioResult>>(`/recommend/from-speech?${queryString}`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -128,7 +146,7 @@ export default class AudioRecorder {
     this.audioBuffer = []
   }
 
-  public async refreshAndGetResult(): Promise<AudioResult> {
+  public async refreshAndGetResult(settings: RecorderSettingsState): Promise<AudioResult> {
     if (!this.mediaRecorder) {
       throw "MediaRecorder object does not exist - have you called initAudio() first?"
     }
@@ -137,7 +155,7 @@ export default class AudioRecorder {
       this.mediaRecorder!.onstop = async () => {
         let resultPromise: Promise<AudioResult>
         try {
-          resultPromise = this.sendAudioAndGetResult(this.audioBuffer, this.mediaRecorder!.mimeType)
+          resultPromise = this.sendAudioAndGetResult(this.audioBuffer, this.mediaRecorder!.mimeType, settings)
           this.clearBuffer()
           this.initMediaRecorder()
           this.mediaRecorder!.start(500)
