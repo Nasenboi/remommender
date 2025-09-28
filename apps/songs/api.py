@@ -12,7 +12,7 @@ from apps.core.schemas import SongCreateSchema, SongSchema, AlbumSchema, SongGen
 
 from .schemas import AlbumDetailSchema
 
-from feature_extraction.song_info_extractor import SongInfoExtractor
+from .feature_extraction.song_info_extractor import SongInfoExtractor
 
 songs_router = Router(tags=["songs"])
 albums_router = Router(tags=["albums"])
