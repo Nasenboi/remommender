@@ -1,6 +1,5 @@
 import json
 import math
-import os
 import random
 import statistics
 import warnings
@@ -25,8 +24,8 @@ warnings.simplefilter(action="ignore")
 from essentia import log
 
 log.warningActive = False
-from consts import *
-from msa.msa import MusicStructureAnalysis
+from apps.songs.feature_extraction.consts import *
+from apps.songs.feature_extraction.msa.msa import MusicStructureAnalysis
 
 
 def del_features_from_df(df):
