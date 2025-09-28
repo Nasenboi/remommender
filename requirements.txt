@@ -1,4 +1,4 @@
-# pip install tensorflow librosa django-ninja scikit-learn dotenv welford typing annoy transformers pandas torch essentia matplotlib django-cors-headers
+# pip install tensorflow librosa django-ninja scikit-learn dotenv welford typing annoy transformers pandas torch essentia matplotlib django-cors-headers tempocnn
 absl-py==2.3.1
 annotated-types==0.7.0
 annoy==1.17.3
