@@ -8,7 +8,7 @@ import tempfile
 import os
 
 from apps.core.models import Album, Song, SongFeatures, SongGenres
-from apps.core.schemas import SongCreateSchema, SongSchema, AlbumSchema, SongGenresSchema, SongFeaturesSchema
+from apps.core.schemas import SongCreateSchema, SongSchema, AlbumSchema
 
 from .schemas import AlbumDetailSchema
 

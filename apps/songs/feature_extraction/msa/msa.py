@@ -1,7 +1,6 @@
-from msa.msa_utils import *
-from msa.similarity_kmean_utils import *
-from msa.similarity_kmean import *
-from msa.ssm import *
+from apps.songs.feature_extraction.msa.msa_utils import *
+from apps.songs.feature_extraction.msa.similarity_kmean import *
+from apps.songs.feature_extraction.msa.ssm import *
 
 from scipy import ndimage
 from essentia.standard import MonoLoader

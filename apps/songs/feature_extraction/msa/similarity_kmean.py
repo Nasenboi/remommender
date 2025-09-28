@@ -1,13 +1,11 @@
 import librosa
-import numpy as np
 import six
 import logging
-import scipy.cluster.vq as vq
 from sklearn import mixture
 from sklearn.cluster import KMeans
 
-import msa.similarity_kmean_utils as utils
-from msa.xmeans import *
+import apps.songs.feature_extraction.msa.similarity_kmean_utils as utils
+from apps.songs.feature_extraction.msa.xmeans import *
 
 def min_max_normalize(F, floor=0.001):
     """Normalizes features such that each vector is between floor to 1."""
