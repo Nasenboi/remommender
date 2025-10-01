@@ -1,21 +1,13 @@
-version: '3.8'
-
 services:
-  mongodb:
-    image: mongo:7
-    container_name: mongodb
-    restart: "no"
+  backend:
+    image: remommender-backend:latest
+    build: .
     ports:
-      - "27017:27017"
+      - "8000:8000"
     volumes:
-      - ${DATA_PATH}db:/data/db
-
-  apache:
-    image: httpd:2.4
-    container_name: apache_fileserver
-    restart: "no"
-    ports:
-      - "80:80"
-    volumes:
-      - ${DATA_PATH}Audio:/usr/local/apache2/htdocs/Audio
-      - ${DATA_PATH}Album_Art:/usr/local/apache2/htdocs/Album_Art
+      - "/your/folder/here:/data"
+    environment:
+      SECRET_KEY: "django-insecure-39yrg+3$9&*%o7nohp@ruihd)d_t%-jdmb_h)@8he*u=43z!hh"
+      MEDIA_ROOT: "/data/srv"
+      SQL_DIR: "/data/db.sqlite3"
+      MODEL_PATH: "/data/Models"

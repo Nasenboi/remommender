@@ -1,4 +1,4 @@
-FROM python:3.13-slim
+FROM python:3.9-slim
 
 # SQL_PATH is automatically set in settings.py to:
 # /remommender/db.sqlite3
@@ -13,9 +13,12 @@ WORKDIR /remommender
 
 COPY . /remommender
 
-RUN pip install --no-cache-dir -r requirements.txt
+#RUN pip install --no-cache-dir -r requirements.txt
+
+# RUN pip install --no-cache-dir tensorflow librosa django-ninja scikit-learn dotenv welford typing annoy transformers pandas torch essentia matplotlib django-cors-headers tempocnn
 
 EXPOSE 8000
 
-ENTRYPOINT ["./runserver.sh"]
+#ENTRYPOINT ["./runserver.sh"]
+ENTRYPOINT ["/bin/bash"]
 CMD []
