@@ -8,6 +8,6 @@ services:
       - "/your/folder/here:/data"
     environment:
       SECRET_KEY: "django-insecure-39yrg+3$9&*%o7nohp@ruihd)d_t%-jdmb_h)@8he*u=43z!hh"
-      MEDIA_ROOT: "/data/srv"
-      SQL_DIR: "/data/db.sqlite3"
-      MODEL_PATH: "/data/Models"
+      FRONTEND_URL: "http://localhost:5173"
+    tty: true
+    stdin_open: true
