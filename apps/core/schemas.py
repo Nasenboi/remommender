@@ -41,8 +41,8 @@ class SongCreateSchema(Schema):
     album_id: Optional[UUID] = None
     artist: str
     duration_s: Optional[float] = None
-    features: Optional[SongFeaturesSchema] = None
-    genres: Optional[SongGenresSchema] = None
+    features: SongFeaturesSchema
+    genres: SongGenresSchema
 
 
 class AlbumSchema(Schema):
