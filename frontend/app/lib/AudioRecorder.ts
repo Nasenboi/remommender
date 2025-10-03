@@ -1,8 +1,7 @@
 'use client'
 
-import {backend, sendBackendRequest} from '~/lib/APIRequests'
+import {sendBackendRequest} from '~/lib/APIRequests'
 import type {Song} from '~/lib/AudioTypes'
-import {AxiosError, type AxiosResponse} from 'axios'
 import { FFmpeg } from '@ffmpeg/ffmpeg'
 import { fetchFile } from '@ffmpeg/util'
 import coreURL from '@ffmpeg/core?url'
@@ -100,11 +99,21 @@ export default class AudioRecorder {
         {audio: true}
       )
       this.initMediaRecorder()
+    } catch (error: any) {
+      toast.error(
+        "Error while initializing audio recording", {
+        description: error.message
+      })
+    }
+    try {
       if(!this.oggSupported) {
         await this.converter.load()
       }
-    } catch (e) {
-      console.error(e) // TODO: implement proper error handling
+    } catch (error: any) {
+      toast.error(
+        "Error while initializing audio conversion", {
+        description: error.message
+      })
     }
   }
 
