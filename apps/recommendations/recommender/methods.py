@@ -1,9 +1,7 @@
-import time
-from typing import Dict, List, Tuple, Optional
+from typing import List, Tuple, Optional
 
 import numpy as np
 from annoy import AnnoyIndex
-from django.db.models import Q
 from sklearn.neighbors import KDTree
 
 from apps.core.models import Song
@@ -51,14 +49,13 @@ def get_song_id_and_dimensions(
         dimensions = list(song_features.values())
         song_Dimensions.append(dimensions)
 
-    return [song_IDs, song_Dimensions]
+    return song_IDs, song_Dimensions
 
 
 def get_song_information(top_IDs: List[str]) -> Playlist:
     """
     Get song information from the database based on the top song IDs.
-    :param collection: MongoDB collection object.
-    :param top_ID: List of top song IDs.
+    :param top_IDs: List of top song IDs.
     :return: List of Song objects with detailed information.
     """
     playlist: Playlist = []
