@@ -89,7 +89,6 @@ def add_json_to_db(name: str) -> str:
         genres=SongGenres.objects.create(**db_song["genres"]),
         audio_file=audio_file,
         album=album,
-        audio_file=audio_file,
     )
     print(f"Added {song.title} from {song.artist} to db!")
     return song.id
