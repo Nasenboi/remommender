@@ -4,6 +4,13 @@ from uuid import UUID
 from ninja import Schema
 
 
+class AlbumSchema(Schema):
+    id: UUID
+    album: str
+    artist: str
+    artwork_url: str
+
+
 class SongFeaturesSchema(Schema):
     valence: Optional[float] = None
     arousal: Optional[float] = None
@@ -24,7 +31,7 @@ class SongGenresSchema(Schema):
 class SongSchema(Schema):
     id: UUID
     title: str
-    album: Optional[str] = None
+    album: Optional[AlbumSchema] = None
     artist: str
     duration_s: float
     features: SongFeaturesSchema
@@ -43,10 +50,3 @@ class SongCreateSchema(Schema):
     duration_s: Optional[float] = None
     features: SongFeaturesSchema
     genres: SongGenresSchema
-
-
-class AlbumSchema(Schema):
-    id: UUID
-    album: str
-    artist: str
-    artwork_url: str
