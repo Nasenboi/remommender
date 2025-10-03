@@ -3,6 +3,7 @@ from dataclasses import dataclass
 import librosa
 import numpy as np
 import torch
+from ninja.errors import HttpError
 from soundfile import LibsndfileError
 from transformers import Wav2Vec2Processor
 from typing_extensions import Final
@@ -39,11 +40,16 @@ class SERProcessor:
         """
         try:
             samples = librosa.load(file, sr=self.SAMPLE_RATE, mono=True)[0]
-        except LibsndfileError as e:
-            raise ValueError(f"Error loading audio file: {e}. Please ensure the file is a valid audio format.")
+        except LibsndfileError:
+            raise HttpError(400, "Error loading audio file. Please ensure the file is a valid audio format.")
+        except ValueError as e:
+            # This also means that librosa could not load the audio file correctly.
+            if str(e).startswith("array is too big"):
+                raise HttpError(400, "Error loading audio file. Please ensure the file is a valid audio format.")
+            raise e
 
         if len(samples) > self._max_length_samples:
-            raise ValueError(f"Audio file is longer than the maximum specified length ({self._max_length} seconds)")
+            raise HttpError(400, f"Audio file is longer than the maximum specified length ({self._max_length} seconds)")
 
         return self._audio_to_speech_emotion(samples)
 
