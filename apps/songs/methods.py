@@ -48,7 +48,7 @@ def add_album_to_db(name: str, album_name: str = None, artist: str = None) -> st
     artwork_file = Album.objects.filter(album=album_name, artist=artist).first()
     if not artwork_file:
         with open(path, "rb") as f:
-            artwork_file = Album.objects.create(artwork=File(f, name=name), album=album_name, artist=artist)
+            artwork_file = Album.objects.create(artwork_file=File(f, name=name), album=album_name, artist=artist)
     return artwork_file.id
 
 
