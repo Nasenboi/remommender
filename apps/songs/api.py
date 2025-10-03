@@ -9,7 +9,7 @@ from ninja.files import UploadedFile
 from ninja.pagination import PageNumberPagination, paginate
 
 from apps.core.models import Album, Song, SongFeatures, SongGenres
-from apps.core.schemas import AlbumSchema, SongCreateSchema, SongSchema
+from apps.core.schemas import AlbumSchema, SongCreateSchema, SongFeaturesSchema, SongGenresSchema, SongSchema
 
 from .feature_extraction.song_info_extractor import SongInfoExtractor
 from .schemas import AlbumDetailSchema
@@ -60,44 +60,48 @@ def get_album_details(request, album_id: UUID):
 @songs_router.post("/")
 def create_and_upload_song(
     request,
-    audio_file: UploadedFile = File(...),
     song: SongCreateSchema = Form(...),
+    audio_file: UploadedFile = File(...),
 ):
+    print(song)
+
     if song.album_id:
         album = Album.objects.get(id=song.album_id)
     else:
         album = None
 
     # calculate features if not present:
-    if not song.feautes or not song.genres:
+    if not song.features or not song.genres:
         # ToDo: Move to methods
-        with tempfile.NamedTemporaryFile(delete=True, suffix=os.path.splitext(audio_file.filename)[1]) as tmp_file:
+        with tempfile.NamedTemporaryFile(delete=True, suffix=os.path.splitext(audio_file.name)[1]) as tmp_file:
             # Write uploaded file content to temporary file
             tmp_file.write(audio_file.file.read())
             tmp_path = tmp_file.name
 
             song_info_extractor = SongInfoExtractor(tmp_path)
             song.duration_s = song_info_extractor.get_duration()
-            all_features = song_info_extractor.extract_all_features()
-            print(all_features)
-            """
-                ToDo: ...
-                song.genres = SongGenresSchema(
-                    all_genres = all_features["statistics"]["genres"]["all_genres"],
-                    top3_genres= all_features["statistics"]["genres"]["top3_genres"]
-                )
-                song.features = SongFeaturesSchema(
-                    valence = all_features["features"][""],
-                    arousal = all_features["features"][""],
-                    authenticity = all_features["features"][""],
-                    timeliness = all_features["features"][""],
-                    complexity = all_features["features"][""],
-                    danceability = all_features["features"][""],
-                    tonal = all_features["features"][""],
-                    voice = all_features["features"][""],
-                    bpm = all_features["features"][""],
-                )
-                """
+            essentia_genre_features = song_info_extractor.extract_essentia_genre_features()
+            print(essentia_genre_features)
+            song.genres = SongGenresSchema(
+                all_genres=essentia_genre_features["all_genres"], top3_genres=essentia_genre_features["top3_genres"]
+            )
+
+            gmbi_features_frames = song_info_extractor.extract_gmbi_features_frames()
+            print(gmbi_features_frames)
+            essentia_dl_features = song_info_extractor.extract_essentia_dl_features()
+            print(essentia_dl_features)
+
+            song.features = SongFeaturesSchema(
+                valence=gmbi_features_frames["mean"]["valence"],
+                arousal=gmbi_features_frames["mean"]["arousal"],
+                authenticity=gmbi_features_frames["mean"]["authenticity"],
+                timeliness=gmbi_features_frames["mean"]["timeliness"],
+                complexity=gmbi_features_frames["mean"]["complexity"],
+                danceability=essentia_dl_features["mean"]["danceability"],
+                tonal=essentia_dl_features["mean"]["tonal"],
+                voice=essentia_dl_features["mean"]["voice"],
+                bpm=essentia_dl_features["mean"]["bpm"],
+            )
 
     song = Song.objects.create(
         **song.model_dump(exclude={"audio_file_id", "artwork_id", "features", "genres"}),
