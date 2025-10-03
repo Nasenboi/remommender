@@ -119,6 +119,8 @@ export default class AudioRecorder {
 
   private static buildSettingsQueryString(settings: RecorderSettingsState): string {
     const params = new URLSearchParams()
+    params.append('arousal_weight', settings.arousalWeight.toString())
+    params.append('valence_weight', settings.valenceWeight.toString())
     if (settings.authenticityEnabled) params.append('authenticity', settings.authenticity.toString())
     if (settings.genreEnabled && settings.genre !== null) params.append('genre', settings.genre)
     if (settings.timelinessEnabled) params.append('timeliness', settings.timeliness.toString())

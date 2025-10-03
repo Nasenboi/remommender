@@ -24,6 +24,7 @@ import {
 } from '~/components/ui/select'
 import React from 'react'
 import {Settings} from 'lucide-react'
+import {Separator} from "~/components/ui/separator"
 
 export enum RefreshOption {
   FIVE = 5,
@@ -71,6 +72,8 @@ export enum Genre {
 
 export interface RecorderSettingsState {
   refreshTime: RefreshOption
+  arousalWeight: number
+  valenceWeight: number
   genreEnabled: boolean
   genre: Genre | null
   authenticityEnabled: boolean
@@ -100,6 +103,10 @@ export function RecorderSettings({ settings, setSettings }: RecorderSettingsProp
     (v) => typeof v === "number"
   ) as RefreshOption[]
   const genres = Object.values(Genre)
+
+  function setWeights(value: number[]) {
+    setSettings(s => ({ ...s, arousalWeight: 1 - value[0], valenceWeight: value[0] }))
+  }
 
   return (
     <Sheet>
@@ -136,6 +143,25 @@ export function RecorderSettings({ settings, setSettings }: RecorderSettingsProp
             </Select>
           </div>
 
+          <div className="grid gap-3">
+            <div className="flex justify-between items-center">
+              <Label>Arousal / Valence Weight</Label>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground w-[100px] text-right">
+                  Arousal: {settings.arousalWeight.toFixed(2)},<br />
+                  Valence: {settings.valenceWeight.toFixed(2)}
+                </span>
+              </div>
+            </div>
+            <Slider
+              min={0}
+              max={1}
+              step={0.01}
+              value={[settings.valenceWeight]}
+              onValueChange={(val) => setWeights(val)}
+            />
+          </div>
+          <Separator className="mt-2 mb-2" />
           <div className="grid gap-3">
             <div className="flex justify-between items-center">
               <Label>Genre</Label>

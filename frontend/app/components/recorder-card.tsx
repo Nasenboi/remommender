@@ -17,6 +17,8 @@ export function RecorderCard() {
 
   const [settings, setSettings] = useState<RecorderSettingsState>({
     refreshTime: 20,
+    arousalWeight: 0.5,
+    valenceWeight: 0.5,
     genreEnabled: false,
     genre: null,
     authenticityEnabled: false,
