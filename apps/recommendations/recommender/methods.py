@@ -124,6 +124,9 @@ def k_d_tree(
     for i, val in enumerate(ind):
         if val == 0:
             del ind[i]
+            if len(ind) == 0:
+                break
+
         # subtract array index and get the Songadress (subtract because inputVector is deleted)
         ind[i] = ind[i] - 1
         songList.append(data[0][ind[i]])
