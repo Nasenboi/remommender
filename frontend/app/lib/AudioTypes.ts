@@ -65,4 +65,11 @@ export type AllGenres = {
   House: number
 }
 
+export interface Album {
+  id: string
+  album: string
+  artist: string
+  artwork_url: string
+}
+
 
