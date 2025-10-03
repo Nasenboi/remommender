@@ -1,13 +1,14 @@
 'use client'
 
-import {backend} from '~/lib/APIRequests'
+import {backend, sendBackendRequest} from '~/lib/APIRequests'
 import type {Song} from '~/lib/AudioTypes'
-import type {AxiosResponse} from 'axios'
+import {AxiosError, type AxiosResponse} from 'axios'
 import { FFmpeg } from '@ffmpeg/ffmpeg'
 import { fetchFile } from '@ffmpeg/util'
 import coreURL from '@ffmpeg/core?url'
 import wasmURL from '@ffmpeg/core/wasm?url'
 import type {RecorderSettingsState} from '~/components/recorder-settings'
+import {toast} from "sonner"
 
 type AudioResult = {
   song: Song
@@ -134,7 +135,10 @@ export default class AudioRecorder {
 
     const queryString = AudioRecorder.buildSettingsQueryString(settings)
 
-    const response = await backend.post<FormData, AxiosResponse<AudioResult>>(`/recommend/from-speech?${queryString}`, formData, {
+    const response = await sendBackendRequest<AudioResult>({
+      method: 'post',
+      url: `/recommend/from-speech?${queryString}`,
+      data: formData,
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -161,9 +165,8 @@ export default class AudioRecorder {
           this.mediaRecorder!.start(500)
           let result = await resultPromise
           resolve(result)
-        } catch (error) {
-          console.error("Error sending audio:", error)
-          reject(error)
+        } catch (_error) {
+          reject(_error)
         }
       }
       this.mediaRecorder!.stop()
