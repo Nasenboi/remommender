@@ -1,21 +1,22 @@
+import os
+import tempfile
+from typing import List
+from uuid import UUID
+
 from ninja import File, Form, Router
 from ninja.errors import ValidationError
 from ninja.files import UploadedFile
-from typing import List
-from ninja.pagination import paginate, PageNumberPagination
-from uuid import UUID
-import tempfile
-import os
+from ninja.pagination import PageNumberPagination, paginate
 
 from apps.core.models import Album, Song, SongFeatures, SongGenres
-from apps.core.schemas import SongCreateSchema, SongSchema, AlbumSchema
-
-from .schemas import AlbumDetailSchema
+from apps.core.schemas import AlbumSchema, SongCreateSchema, SongSchema
 
 from .feature_extraction.song_info_extractor import SongInfoExtractor
+from .schemas import AlbumDetailSchema
 
 songs_router = Router(tags=["songs"])
 albums_router = Router(tags=["albums"])
+
 
 @albums_router.post("/")
 def upload_album(
@@ -34,24 +35,27 @@ def upload_album(
     if existing_artwork_file:
         return {"id": existing_artwork_file.id}
 
-    album = Album.objects.create(album=album_name, artwork=artwork_file, artist=artist)
+    album = Album.objects.create(album=album_name, artwork_file=artwork_file, artist=artist)
     return {"id": album.id}
+
 
 @albums_router.get("/", response=List[AlbumSchema])
 @paginate(PageNumberPagination, page_size=10)
 def list_albums(request):
     return Album.objects.all()
 
+
 @albums_router.get("/{album_id}", response=AlbumDetailSchema)
 def get_album_details(request, album_id: UUID):
     album = Album.objects.filter(id=album_id).first()
     if not album:
         return 404, {"detail": "Album not found"}
-    
+
     detail_album = AlbumDetailSchema.from_orm(album)
     detail_album.songs = Song.objects.filter(album=album)
 
     return detail_album
+
 
 @songs_router.post("/")
 def create_and_upload_song(
@@ -68,15 +72,15 @@ def create_and_upload_song(
     if not song.feautes or not song.genres:
         # ToDo: Move to methods
         with tempfile.NamedTemporaryFile(delete=True, suffix=os.path.splitext(audio_file.filename)[1]) as tmp_file:
-                # Write uploaded file content to temporary file
-                tmp_file.write(audio_file.file.read())
-                tmp_path = tmp_file.name
+            # Write uploaded file content to temporary file
+            tmp_file.write(audio_file.file.read())
+            tmp_path = tmp_file.name
 
-                song_info_extractor = SongInfoExtractor(tmp_path)
-                song.duration_s = song_info_extractor.get_duration()
-                all_features = song_info_extractor.extract_all_features()
-                print(all_features)
-                """
+            song_info_extractor = SongInfoExtractor(tmp_path)
+            song.duration_s = song_info_extractor.get_duration()
+            all_features = song_info_extractor.extract_all_features()
+            print(all_features)
+            """
                 ToDo: ...
                 song.genres = SongGenresSchema(
                     all_genres = all_features["statistics"]["genres"]["all_genres"],
@@ -104,6 +108,3 @@ def create_and_upload_song(
     )
 
     return SongSchema.from_orm(song)
-
-
-
