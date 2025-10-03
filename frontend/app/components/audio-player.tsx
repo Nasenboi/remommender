@@ -4,6 +4,7 @@ import React, {useEffect, useRef, useState} from 'react'
 import {Slider} from '~/components/ui/slider'
 import {useAudioContext} from '~/context/audio-context'
 import type {Song} from '~/lib/AudioTypes'
+import {getAbsoluteBackendURL} from "~/lib/APIRequests"
 
 
 export function AudioPlayer() {
@@ -13,10 +14,6 @@ export function AudioPlayer() {
   const [ isPlaying, setIsPlaying ] = useState<boolean>(false)
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const prevSongRef = useRef<Song | null>(null)
-
-  function getAbsoluteBackendURL(relativeURL: string) {
-    return import.meta.env.VITE_BACKEND_BASE_URL + relativeURL
-  }
 
   useEffect(() => {
 

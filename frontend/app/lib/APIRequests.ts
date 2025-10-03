@@ -3,6 +3,10 @@ import {toast} from "sonner"
 
 export const backend = axios.create({ baseURL: import.meta.env.VITE_BACKEND_BASE_URL })
 
+export function getAbsoluteBackendURL(relativeURL: string) {
+  return import.meta.env.VITE_BACKEND_BASE_URL + relativeURL
+}
+
 export async function sendBackendRequest<T = any, R = AxiosResponse<T>, D = any>(config: AxiosRequestConfig<D>): Promise<R> {
   try {
     return await backend.request<T, R, D>(config)
