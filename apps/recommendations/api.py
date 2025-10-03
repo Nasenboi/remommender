@@ -24,7 +24,7 @@ router = Router(tags=["recommendations"])
 def recommend_from_speech(
     request,
     file: UploadedFile,
-    genre: Optional[GENRE_DATA_BASE] = "none",
+    genre: Optional[GENRE_DATA_BASE] = None,
     authenticity: Optional[float] = None,
     timeliness: Optional[float] = None,
     complexity: Optional[float] = None,

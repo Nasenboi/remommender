@@ -1,5 +1,5 @@
 import time
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Optional
 
 import numpy as np
 from annoy import AnnoyIndex
@@ -24,25 +24,28 @@ def get_song_id() -> List[str]:
 
 
 def get_song_id_and_dimensions(
-    genre: GENRE_DATA_BASE,
+    genre: Optional[GENRE_DATA_BASE],
     features: List[str],
 ) -> Tuple[List[str], List[List[float]]]:
     """
     Get song IDs and their corresponding dimensions from database
     :param genre: Genre of the songs (e.g., rock, pop, none).
+    :param features: List of features
     :return: List containing song IDs and their dimensions.
     """
 
     song_IDs = []
     song_Dimensions = []
 
-    if genre == "none":
-        # Fetch all songs if no genre filter
-        songs = Song.objects.all()
-    else:
-        songs = Song.objects.filter(Q(genres__top3_genres__has_key=genre)).distinct()
+    songs = Song.objects.all()
 
     for song in songs:
+        # Skip song if a genre filter is set and the genre is not included in top3_genres.
+        # This is inefficient but SQLite (Django's default database) does not support filtering JSONFields (such as
+        # top3_genres) by key, hence a solution like this has to be used.
+        if genre and genre not in song.genres.top3_genres:
+            continue
+
         song_IDs.append(song.id)
         song_features = song.features.to_dict(include=features)
         dimensions = list(song_features.values())
@@ -72,12 +75,12 @@ def get_song_information(top_IDs: List[str]) -> Playlist:
 
 def generate_playlist(
     features: SongFeaturesSchema,
-    genre: GENRE_DATA_BASE = "none",
+    genre: Optional[GENRE_DATA_BASE] = None,
 ) -> Playlist:
     """
     Generate a playlist based on the input vector and playlist type.
     :param features: Input vector of different kinds of features.
-    :param genre: Genre of the songs (e.g., rock, pop, none).
+    :param genre: Genre of the songs (e.g., Rock, Pop, None).
     :return: List of Song objects in the generated playlist.
     """
 
