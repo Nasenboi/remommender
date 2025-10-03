@@ -1,7 +1,19 @@
-from typing import Dict, List, Optional
+from typing import Annotated, Dict, List, Optional, TypeVar, Union
 from uuid import UUID
 
 from ninja import Schema
+from pydantic import WrapValidator
+from pydantic_core import PydanticUseDefault
+
+
+def _empty_str_to_default(v, handler, info):
+    if isinstance(v, str) and v == "":
+        raise PydanticUseDefault
+    return handler(v)
+
+
+T = TypeVar("T")
+EmptyStrToDefault = Annotated[T, WrapValidator(_empty_str_to_default)]
 
 
 class AlbumSchema(Schema):
@@ -45,8 +57,8 @@ Playlist = List[SongSchema]
 
 class SongCreateSchema(Schema):
     title: str
-    album_id: Optional[UUID] = None
+    album_id: Optional[Union[UUID, str]] = None
     artist: str
     duration_s: Optional[float] = None
-    features: SongFeaturesSchema
-    genres: SongGenresSchema
+    features: Optional[EmptyStrToDefault[SongFeaturesSchema]] = None
+    genres: Optional[EmptyStrToDefault[SongGenresSchema]] = None

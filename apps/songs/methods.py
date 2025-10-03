@@ -48,7 +48,7 @@ def add_album_to_db(name: str, album_name: str = None, artist: str = None) -> st
     artwork_file = Album.objects.filter(album=album_name, artist=artist).first()
     if not artwork_file:
         with open(path, "rb") as f:
-            artwork_file = Album.objects.create(artwork=File(f, name=name), album=album_name, artist=artist)
+            artwork_file = Album.objects.create(artwork_file=File(f, name=name), album=album_name, artist=artist)
     return artwork_file.id
 
 
@@ -73,26 +73,25 @@ def add_json_to_db(name: str) -> str:
         return existing_song.id
     try:
         album_id = add_album_to_db(raw_data["ids"]["artwork_id"], db_album["album"], db_album["artist"])
+        album = Album.objects.get(id=album_id)
+
         song_path = os.path.join(os.getenv("PRE_CALC_AUDIO_PATH"), raw_data["ids"]["track_id"])
         with open(song_path, "rb") as f:
             audio_file = File(f, name=raw_data["ids"]["track_id"])
+            keys_to_exclude = ["audio_file_id", "artwork_id", "features", "genres"]
+            song = Song.objects.create(
+                **{k: v for k, v in db_song.items() if k not in keys_to_exclude},
+                features=SongFeatures.objects.create(**db_song["features"]),
+                genres=SongGenres.objects.create(**db_song["genres"]),
+                audio_file=audio_file,
+                album=album,
+            )
+            print(f"Added {song.title} from {song.artist} to db!")
+            return song.id
+
     except FileNotFoundError as e:
         print(f"File not found: {e}")
         return None
-
-    album = Album.objects.get(id=album_id)
-
-    keys_to_exclude = ["audio_file_id", "artwork_id", "features", "genres"]
-    song = Song.objects.create(
-        **{k: v for k, v in db_song.items() if k not in keys_to_exclude},
-        features=SongFeatures.objects.create(**db_song["features"]),
-        genres=SongGenres.objects.create(**db_song["genres"]),
-        audio_file=audio_file,
-        album=album,
-        audio_file=audio_file,
-    )
-    print(f"Added {song.title} from {song.artist} to db!")
-    return song.id
 
 
 def check_and_add_pre_calculated_songs_to_db() -> None:

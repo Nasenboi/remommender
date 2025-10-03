@@ -39,5 +39,14 @@ echo "<< Updating the database schema >>"
 # python manage.py makemigrations --no-input
 python manage.py migrate --no-input
 
+echo "<< Check pre calculated data >>"
+
+if [[ -n "$PRE_CALC_JSON_PATH" && -n "$PRE_CALC_AUDIO_PATH" && -n "$PRE_CALC_ALBUM_ART_PATH" ]]; then
+    echo "** All PRE_CALC_* environment variables are set. Running add_pre_calculated_songs. **"
+    python manage.py add_pre_calculated_songs
+else
+    echo "** One or more PRE_CALC_* environment variables are not set. Skipping add_pre_calculated_songs. **"
+fi
+
 echo "<< Starting the Django development server >>"
 python manage.py runserver 0.0.0.0:8000
