@@ -15,6 +15,7 @@ import {SidebarProvider, SidebarTrigger} from '~/components/ui/sidebar'
 import {AppSidebar} from '~/components/app-sidebar'
 import {AudioPlayer} from '~/components/audio-player'
 import {AudioProvider} from '~/context/audio-context'
+import {Toaster} from "sonner"
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -49,6 +50,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 {children}
                 <AudioPlayer />
                 <ScrollRestoration />
+                <Toaster position="top-center" richColors />
                 <Scripts />
               </main>
             </SidebarProvider>

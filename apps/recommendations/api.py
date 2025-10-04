@@ -1,6 +1,7 @@
 from typing import Optional
 
 from ninja import Router
+from ninja.errors import HttpError
 from ninja.files import UploadedFile
 
 from apps.core.schemas import SongFeaturesSchema
@@ -23,7 +24,7 @@ router = Router(tags=["recommendations"])
 def recommend_from_speech(
     request,
     file: UploadedFile,
-    genre: Optional[GENRE_DATA_BASE] = "none",
+    genre: Optional[GENRE_DATA_BASE] = None,
     authenticity: Optional[float] = None,
     timeliness: Optional[float] = None,
     complexity: Optional[float] = None,
@@ -51,6 +52,12 @@ def recommend_from_speech(
     )
 
     playlist = generate_playlist(genre=genre, features=features)
+
+    if len(playlist) == 0:
+        raise HttpError(
+            500,
+            "No recommendation could be generated. This is probably because the song library is empty or you have set filters for which no song could be found within the library."
+        )
 
     session_data = update_session_data(emotion_features.valence, emotion_features.arousal, session_data)
 

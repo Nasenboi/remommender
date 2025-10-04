@@ -8,15 +8,18 @@ import AudioRecorder from '~/lib/AudioRecorder'
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from '~/components/ui/card'
 import {Button} from '~/components/ui/button'
 import {Mic, Pause} from 'lucide-react'
+import type {Song} from "~/lib/AudioTypes"
 
 export function RecorderCard() {
   const [ isRecording, setIsRecording ] = useState<boolean>(false)
   const audioRecorder = useRef<AudioRecorder | null>(null)
   const [ refreshInterval, setRefreshInterval ] = useState<any>(null)
-  const { currentSong, setCurrentSong } = useAudioContext()
+  const { playlist, setPlaylist, playlistPosition, setPlaylistPosition } = useAudioContext()
 
   const [settings, setSettings] = useState<RecorderSettingsState>({
     refreshTime: 20,
+    arousalWeight: 0.5,
+    valenceWeight: 0.5,
     genreEnabled: false,
     genre: null,
     authenticityEnabled: false,
@@ -35,7 +38,7 @@ export function RecorderCard() {
     bpm: 120
   })
 
-  function recordToggle(e : React.MouseEvent<HTMLElement>) {
+  function recordToggle() {
     if(!audioRecorder.current) {
       AudioRecorder.createRecorder().then((recorderInstance) => {
         audioRecorder.current = recorderInstance
@@ -48,7 +51,8 @@ export function RecorderCard() {
     if(isRecording) {
       audioRecorder.current?.stop()
       setIsRecording(false)
-      setCurrentSong(null)
+      setPlaylistPosition(null)
+      setPlaylist(null)
     } else {
       audioRecorder.current?.start().then(() => {
         setIsRecording(true)
@@ -70,15 +74,19 @@ export function RecorderCard() {
     }
   }, [isRecording, settings.refreshTime])
 
-  // This ref is necessary because when the refresh() function runs in a set interval, the value of currentSong
+  // This ref is necessary because when the refresh() function runs in a set interval, the value of playlist / position
   // does not get updated. This is because variables are captured when creating the interval, i.e. the variable values
   // are copied and not referenced. To solve this, we have to create a ref which updates alongside the currentSong within
   // the AudioContext. We can access this ref in the refresh function to check whether the value of currentSong needs to
   // be updated.
-  const currentSongRef = useRef(currentSong)
+  const playlistRef = useRef(playlist)
+  const playlistPositionRef = useRef(playlistPosition)
   useEffect(() => {
-    currentSongRef.current = currentSong
-  }, [currentSong])
+    playlistRef.current = playlist
+  }, [playlist])
+  useEffect(() => {
+    playlistPositionRef.current = playlistPosition
+  }, [playlistPosition])
   // same as above, but for the settings
   const settingsRef = useRef(settings)
   useEffect(() => {
@@ -87,8 +95,17 @@ export function RecorderCard() {
 
   function refresh() {
     audioRecorder.current?.refreshAndGetResult(settingsRef.current).then((result) => {
-      if(result.song.id !== currentSongRef.current?.id) {
-        setCurrentSong(result.song)
+      const newSong = result.song
+      let playingSong: Song | null = null
+
+      if(playlistRef.current && playlistPositionRef.current) {
+        playingSong = playlistRef.current[playlistPositionRef.current]
+      }
+      
+      if(newSong.id !== playingSong?.id) {
+        setPlaylistPosition(null)
+        setPlaylist([newSong])
+        setPlaylistPosition(0)
       }
     })
   }

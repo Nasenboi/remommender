@@ -1,9 +1,7 @@
-import time
-from typing import Dict, List, Tuple
+from typing import List, Tuple, Optional
 
 import numpy as np
 from annoy import AnnoyIndex
-from django.db.models import Q
 from sklearn.neighbors import KDTree
 
 from apps.core.models import Song
@@ -24,38 +22,40 @@ def get_song_id() -> List[str]:
 
 
 def get_song_id_and_dimensions(
-    genre: GENRE_DATA_BASE,
+    genre: Optional[GENRE_DATA_BASE],
     features: List[str],
 ) -> Tuple[List[str], List[List[float]]]:
     """
     Get song IDs and their corresponding dimensions from database
     :param genre: Genre of the songs (e.g., rock, pop, none).
+    :param features: List of features
     :return: List containing song IDs and their dimensions.
     """
 
     song_IDs = []
     song_Dimensions = []
 
-    if genre == "none":
-        # Fetch all songs if no genre filter
-        songs = Song.objects.all()
-    else:
-        songs = Song.objects.filter(Q(genres__top3_genres__has_key=genre)).distinct()
+    songs = Song.objects.all()
 
     for song in songs:
+        # Skip song if a genre filter is set and the genre is not included in top3_genres.
+        # This is inefficient but SQLite (Django's default database) does not support filtering JSONFields (such as
+        # top3_genres) by key, hence a solution like this has to be used.
+        if genre and genre not in song.genres.top3_genres:
+            continue
+
         song_IDs.append(song.id)
         song_features = song.features.to_dict(include=features)
         dimensions = list(song_features.values())
         song_Dimensions.append(dimensions)
 
-    return [song_IDs, song_Dimensions]
+    return song_IDs, song_Dimensions
 
 
 def get_song_information(top_IDs: List[str]) -> Playlist:
     """
     Get song information from the database based on the top song IDs.
-    :param collection: MongoDB collection object.
-    :param top_ID: List of top song IDs.
+    :param top_IDs: List of top song IDs.
     :return: List of Song objects with detailed information.
     """
     playlist: Playlist = []
@@ -72,12 +72,12 @@ def get_song_information(top_IDs: List[str]) -> Playlist:
 
 def generate_playlist(
     features: SongFeaturesSchema,
-    genre: GENRE_DATA_BASE = "none",
+    genre: Optional[GENRE_DATA_BASE] = None,
 ) -> Playlist:
     """
     Generate a playlist based on the input vector and playlist type.
     :param features: Input vector of different kinds of features.
-    :param genre: Genre of the songs (e.g., rock, pop, none).
+    :param genre: Genre of the songs (e.g., Rock, Pop, None).
     :return: List of Song objects in the generated playlist.
     """
 
@@ -124,6 +124,9 @@ def k_d_tree(
     for i, val in enumerate(ind):
         if val == 0:
             del ind[i]
+            if len(ind) == 0:
+                break
+
         # subtract array index and get the Songadress (subtract because inputVector is deleted)
         ind[i] = ind[i] - 1
         songList.append(data[0][ind[i]])

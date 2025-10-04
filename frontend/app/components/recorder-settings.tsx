@@ -24,6 +24,7 @@ import {
 } from '~/components/ui/select'
 import React from 'react'
 import {Settings} from 'lucide-react'
+import {Separator} from "~/components/ui/separator"
 
 export enum RefreshOption {
   FIVE = 5,
@@ -34,43 +35,45 @@ export enum RefreshOption {
 }
 
 export enum Genre {
-  ROCK = "rock",
-  POP = "pop",
-  ALTERNATIVE = "alternative",
-  INDIE = "indie",
-  ELECTRONIC = "electronic",
-  DANCE = "dance",
-  ALTERNATIVE_ROCK = "alternative rock",
-  JAZZ = "jazz",
-  METAL = "metal",
-  CHILLOUT = "chillout",
-  CLASSIC_ROCK = "classic rock",
-  SOUL = "soul",
-  INDIE_ROCK = "indie rock",
-  ELECTRONICA = "electronica",
-  FOLK = "folk",
-  CHILL = "chill",
-  INSTRUMENTAL = "instrumental",
-  PUNK = "punk",
-  BLUES = "blues",
-  HARD_ROCK = "hard rock",
-  AMBIENT = "ambient",
-  ACOUSTIC = "acoustic",
-  EXPERIMENTAL = "experimental",
+  ROCK = "Rock",
+  POP = "Pop",
+  ALTERNATIVE = "Alternative",
+  INDIE = "Indie",
+  ELECTRONIC = "Electronic",
+  DANCE = "Dance",
+  ALTERNATIVE_ROCK = "Alternative Rock",
+  JAZZ = "Jazz",
+  METAL = "Metal",
+  CHILLOUT = "Chillout",
+  CLASSIC_ROCK = "Classic Rock",
+  SOUL = "Soul",
+  INDIE_ROCK = "Indie Rock",
+  ELECTRONICA = "Electronica",
+  FOLK = "Folk",
+  CHILL = "Chill",
+  INSTRUMENTAL = "Instrumental",
+  PUNK = "Punk",
+  BLUES = "Blues",
+  HARD_ROCK = "Hard Rock",
+  AMBIENT = "Ambient",
+  ACOUSTIC = "Acoustic",
+  EXPERIMENTAL = "Experimental",
   HIP_HOP = "Hip-Hop",
-  COUNTRY = "country",
-  EASY_LISTENING = "easy listening",
-  FUNK = "funk",
-  ELECTRO = "electro",
-  HEAVY_METAL = "heavy metal",
-  PROGRESSIVE_ROCK = "Progressive rock",
-  RNB = "rnb",
-  INDIE_POP = "indie pop",
+  COUNTRY = "Country",
+  EASY_LISTENING = "Easy Listening",
+  FUNK = "Funk",
+  ELECTRO = "Electro",
+  HEAVY_METAL = "Heavy Metal",
+  PROGRESSIVE_ROCK = "Progressive Rock",
+  RNB = "RnB",
+  INDIE_POP = "Indie Pop",
   HOUSE = "House"
 }
 
 export interface RecorderSettingsState {
   refreshTime: RefreshOption
+  arousalWeight: number
+  valenceWeight: number
   genreEnabled: boolean
   genre: Genre | null
   authenticityEnabled: boolean
@@ -100,6 +103,10 @@ export function RecorderSettings({ settings, setSettings }: RecorderSettingsProp
     (v) => typeof v === "number"
   ) as RefreshOption[]
   const genres = Object.values(Genre)
+
+  function setWeights(value: number[]) {
+    setSettings(s => ({ ...s, arousalWeight: 1 - value[0], valenceWeight: value[0] }))
+  }
 
   return (
     <Sheet>
@@ -136,6 +143,25 @@ export function RecorderSettings({ settings, setSettings }: RecorderSettingsProp
             </Select>
           </div>
 
+          <div className="grid gap-3">
+            <div className="flex justify-between items-center">
+              <Label>Arousal / Valence Weight</Label>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground w-[100px] text-right">
+                  Arousal: {settings.arousalWeight.toFixed(2)},<br />
+                  Valence: {settings.valenceWeight.toFixed(2)}
+                </span>
+              </div>
+            </div>
+            <Slider
+              min={0}
+              max={1}
+              step={0.01}
+              value={[settings.valenceWeight]}
+              onValueChange={(val) => setWeights(val)}
+            />
+          </div>
+          <Separator className="mt-2 mb-2" />
           <div className="grid gap-3">
             <div className="flex justify-between items-center">
               <Label>Genre</Label>
