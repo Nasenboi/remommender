@@ -119,7 +119,7 @@ export default function AlbumOverview() {
   }
 
   return (
-    <div className="m-8">
+    <div className="m-8 h-full">
       <h1 className="ml-4 text-3xl font-bold mb-4">Album Library</h1>
       <AlbumList albums={albums} count={numberOfAlbums} />
       <FullPagination />
