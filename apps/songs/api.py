@@ -3,6 +3,7 @@ import tempfile
 from typing import List
 from uuid import UUID
 
+from django.shortcuts import get_object_or_404
 from ninja import File, Form, Router
 from ninja.errors import ValidationError
 from ninja.files import UploadedFile
@@ -56,6 +57,11 @@ def get_album_details(request, album_id: UUID):
 
     return detail_album
 
+@songs_router.delete("/{song_id}")
+def delete_song(request, song_id: UUID):
+    song = get_object_or_404(Song, id=song_id)
+    song.delete()
+    return {"deleted": True}
 
 @songs_router.post("/")
 def create_and_upload_song(
