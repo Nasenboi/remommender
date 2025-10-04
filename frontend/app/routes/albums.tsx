@@ -1,7 +1,7 @@
 import { AlbumCard } from "~/components/album-card"
 import { useEffect, useState } from "react"
 import { sendBackendRequest } from "~/lib/APIRequests"
-import type { Album } from "~/lib/AudioTypes"
+import type { AlbumShort } from "~/lib/AudioTypes"
 import {
   Pagination,
   PaginationContent,
@@ -20,7 +20,7 @@ export function meta({}: Route.MetaArgs) {
   ]
 }
 
-function AlbumList({ albums, count }: { albums: Album[] | null, count: number }) {
+function AlbumList({ albums, count }: { albums: AlbumShort[] | null, count: number }) {
   if (albums === null) {
     return <p>Loading...</p>
   }
@@ -41,7 +41,7 @@ function AlbumList({ albums, count }: { albums: Album[] | null, count: number })
 }
 
 export default function AlbumOverview() {
-  const [albums, setAlbums] = useState<Album[] | null>(null)
+  const [albums, setAlbums] = useState<AlbumShort[] | null>(null)
   const [numberOfAlbums, setNumberOfAlbums] = useState<number>(0)
   const pageSize = 24
   const [searchParams, setSearchParams] = useSearchParams()
@@ -55,7 +55,7 @@ export default function AlbumOverview() {
       url: `/albums/?page=${currentPage}&page_size=${pageSize}`,
       method: "GET",
     }).then((response) => {
-      setAlbums(response.data.items as Album[])
+      setAlbums(response.data.items as AlbumShort[])
       setNumberOfAlbums(response.data.count as number)
     })
   }, [currentPage])

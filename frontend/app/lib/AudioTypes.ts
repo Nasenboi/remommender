@@ -65,11 +65,15 @@ export type AllGenres = {
   House: number
 }
 
-export interface Album {
+export interface AlbumShort {
   id: string
   album: string
   artist: string
   artwork_url: string
+}
+
+export interface Album extends AlbumShort{
+  songs: Song[]
 }
 
 

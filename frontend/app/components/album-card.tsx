@@ -1,11 +1,11 @@
-import type {Album} from "~/lib/AudioTypes"
+import type {AlbumShort} from "~/lib/AudioTypes"
 import {Link} from "react-router"
 import {Card, CardContent, CardTitle} from "~/components/ui/card"
 import {getAbsoluteBackendURL} from "~/lib/APIRequests"
 import React from "react"
 
 interface AlbumCardProps {
-  album: Album
+  album: AlbumShort
 }
 
 function Artwork({ url, title }: { url: string, title: string }) {
@@ -20,7 +20,7 @@ function Artwork({ url, title }: { url: string, title: string }) {
 export function AlbumCard({ album }: AlbumCardProps) {
   return (
     <Link
-      to={`/albums/${album.id}`}
+      to={`/library/albums/${album.id}`}
       className="group hover:scale-[1.02] transition-transform"
     >
       <Card className="overflow-hidden border-0 bg-transparent shadow-none">

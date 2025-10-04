@@ -2,8 +2,10 @@ import {createContext, type Dispatch, type ReactNode, type SetStateAction, useCo
 import type { Song } from '~/lib/AudioTypes'
 
 type AudioContextType = {
-  currentSong: Song | null
-  setCurrentSong: Dispatch<SetStateAction<Song | null>>
+  playlist: Song[] | null
+  setPlaylist: Dispatch<SetStateAction<Song[] | null>>
+  playlistPosition: number | null
+  setPlaylistPosition: Dispatch<SetStateAction<number | null>>
 }
 const AudioContext = createContext<AudioContextType | undefined>(undefined)
 export const AudioProvider = ({
@@ -11,10 +13,13 @@ export const AudioProvider = ({
 }: {
   children: ReactNode
 }) =>{
-  const [currentSong, setCurrentSong] = useState<Song | null>(null)
+  const [playlist, setPlaylist] = useState<Song[] | null>(null)
+  const [playlistPosition, setPlaylistPosition] = useState<number | null>(null)
   const contextValue= {
-    currentSong,
-    setCurrentSong
+    playlist,
+    setPlaylist,
+    playlistPosition,
+    setPlaylistPosition
   }
   return (
     <AudioContext.Provider value={contextValue}>

@@ -1,38 +1,56 @@
-import {Pause, Play, Volume2} from 'lucide-react'
-import {Button} from '~/components/ui/button'
-import React, {useEffect, useRef, useState} from 'react'
-import {Slider} from '~/components/ui/slider'
-import {useAudioContext} from '~/context/audio-context'
-import type {Song} from '~/lib/AudioTypes'
-import {getAbsoluteBackendURL} from "~/lib/APIRequests"
-
+import {Pause, Play, SkipBack, SkipForward, Volume2} from 'lucide-react'
+import { Button } from '~/components/ui/button'
+import React, { useEffect, useRef, useState } from 'react'
+import { Slider } from '~/components/ui/slider'
+import { useAudioContext } from '~/context/audio-context'
+import type { Song } from '~/lib/AudioTypes'
+import { getAbsoluteBackendURL } from '~/lib/APIRequests'
 
 export function AudioPlayer() {
+  const { playlist, playlistPosition, setPlaylistPosition } = useAudioContext()
 
-  const { currentSong } = useAudioContext()
-
-  const [ isPlaying, setIsPlaying ] = useState<boolean>(false)
+  const [isPlaying, setIsPlaying] = useState<boolean>(false)
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const prevSongRef = useRef<Song | null>(null)
+  const [currentSong, setCurrentSong] = useState<Song | null>(null)
 
   useEffect(() => {
+    if (!playlist || playlist.length === 0 || playlistPosition === null) return
 
-    // change from null to an actual song -> start playing automatically
-    if((!prevSongRef.current && currentSong) || (currentSong && isPlaying)) {
-      audioRef.current?.play().then(() => {
-        setIsPlaying(true)
-      }).catch((err) => {
-        console.error("Error with playing the music automatically:", err)
-      })
-    } else {
-      setIsPlaying(false)
-      audioRef.current?.pause()
+    const newSong = playlist[playlistPosition]
+
+    if (!prevSongRef.current || prevSongRef.current.id !== newSong.id) {
+      setCurrentSong(newSong)
+
+      const handleCanPlay = () => {
+        audioRef.current?.play().then(() => {
+          setIsPlaying(true)
+        }).catch((error) => {
+          console.error('Error while starting playback:', error)
+        })
+      }
+
+      prevSongRef.current = newSong
+
+      audioRef.current?.addEventListener('canplay', handleCanPlay)
+      audioRef.current?.addEventListener('ended', nextSong)
+
+      return () => {
+        audioRef.current?.removeEventListener('canplay', handleCanPlay)
+        audioRef.current?.removeEventListener('ended', nextSong)
+      }
     }
+  }, [playlist, playlistPosition])
 
-    prevSongRef.current = currentSong
-  }, [currentSong])
+  useEffect(() => {
+    if (!playlist) {
+      audioRef.current?.pause()
+      setCurrentSong(null)
+      setIsPlaying(false)
+    }
+  }, [playlist])
 
-  function playToggle(e : React.MouseEvent<HTMLElement>) {
+  function playToggle(e: React.MouseEvent<HTMLElement>) {
     if (isPlaying) {
       setIsPlaying(false)
       audioRef.current?.pause()
@@ -42,12 +60,39 @@ export function AudioPlayer() {
     }
   }
 
-  function Artwork() {
-    if(!currentSong) {
-      return null
+  function nextSong() {
+    if(!playlist || playlistPosition === null) return
+
+    const nextPosition = playlistPosition + 1
+
+    if(nextPosition < playlist.length) {
+      setPlaylistPosition(nextPosition)
     }
+  }
+
+  function previousSong() {
+    if(!playlist || playlistPosition === null) return
+
+    const prevPosition = playlistPosition - 1
+    if(prevPosition >= 0) {
+      setPlaylistPosition(prevPosition)
+    }
+  }
+
+  function handleVolumeChange(value: any) {
+    if(audioRef.current) {
+      audioRef.current.volume = value[0]
+    }
+  }
+
+  function Artwork() {
+    if (!currentSong) return null
     return (
-      <img src={getAbsoluteBackendURL(currentSong.artwork_url)} className="h-full w-full"  alt={currentSong.title}/>
+      <img
+        src={getAbsoluteBackendURL(currentSong.artwork_url)}
+        className="h-full w-full"
+        alt={currentSong.title}
+      />
     )
   }
 
@@ -55,13 +100,16 @@ export function AudioPlayer() {
     let title = "..."
     let artist = "..."
 
-    if(currentSong) {
+    if (currentSong) {
       title = currentSong.title
       artist = currentSong.artist
     }
 
     return (
-      <><p>{title}</p><p className="text-zinc-700 text-xs">{artist}</p></>
+      <>
+        <p>{title}</p>
+        <p className="text-zinc-700 text-xs">{artist}</p>
+      </>
     )
   }
 
@@ -75,24 +123,37 @@ export function AudioPlayer() {
           <SongInfo />
         </div>
       </div>
+
       <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
         <audio
           ref={audioRef}
           src={currentSong ? getAbsoluteBackendURL(currentSong.song_url) : undefined}
-          loop
         />
+        { playlist && playlist.length > 1
+        ? <Button className="p-1 mr-2" size="icon" variant="ghost" onClick={previousSong}>
+            <SkipBack className="size-4" />
+          </Button>
+        : null }
         <Button className="rounded-full w-9 h-9" size="icon" onClick={playToggle}>
           {isPlaying
-            ? <Pause className="size-5 text-white dark:text-zinc-600"/>
-            : <Play className="size-5 text-white dark:text-zinc-600"/>}
+            ? <Pause className="size-5 text-white dark:text-zinc-600" />
+            : <Play className="size-5 text-white dark:text-zinc-600" />}
         </Button>
+        { playlist && playlist.length > 1
+        ? <Button className="p-1 ml-2" size="icon" variant="ghost" onClick={nextSong}>
+            <SkipForward className="size-4" />
+          </Button>
+        : null }
       </div>
+
       <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center h-full">
         <Volume2 className="size-5 text-primary mr-2" />
         <Slider
-          defaultValue={[100]}
-          max={100}
-          step={1}
+          defaultValue={[1]}
+          min={0}
+          max={1}
+          step={0.01}
+          onValueChange={handleVolumeChange}
           className="w-30"
         />
       </div>
