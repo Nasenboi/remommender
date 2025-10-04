@@ -12,6 +12,7 @@ import {
 } from "~/components/ui/pagination"
 import type {Route} from "../../.react-router/types/app/routes/+types/albums"
 import {useSearchParams} from "react-router"
+import {Spinner} from "~/components/ui/spinner"
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -22,7 +23,11 @@ export function meta({}: Route.MetaArgs) {
 
 function AlbumList({ albums, count }: { albums: AlbumShort[] | null, count: number }) {
   if (albums === null) {
-    return <p>Loading...</p>
+    return (
+      <div className="flex items-center justify-center w-full flex-1">
+        <Spinner className="size-10" />
+      </div>
+    )
   }
   if (albums.length === 0) {
     return <p>No albums are currently in your library.</p>
