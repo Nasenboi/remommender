@@ -21,6 +21,8 @@ export function RecorderCard() {
     refreshTime: 20,
     arousalWeight: 0.5,
     valenceWeight: 0.5,
+    invertArousal: false,
+    invertValence: false,
     sessionEnabled: false,
     genreEnabled: false,
     genre: null,
@@ -124,6 +126,8 @@ export function RecorderCard() {
       sendBackendRequest({
         url: "/session/end",
         method: "POST"
+      }).then((res) => {
+        document.cookie = "sessionid="
       })
     }
   }, []);
