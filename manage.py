@@ -2,6 +2,10 @@
 """Django's command-line utility for administrative tasks."""
 import os
 import sys
+import warnings
+
+# Ignore TensorFlow warnings
+warnings.filterwarnings("ignore", category=UserWarning, module="tensorflow")
 
 
 def main():

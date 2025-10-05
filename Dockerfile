@@ -8,6 +8,9 @@ ENV MEDIA_URL="/media/"
 ENV MEDIA_ROOT="/data/srv/media/"
 ENV MODEL_PATH="/data/Models/"
 ENV SQL_PATH="/data/srv/db.sqlite3"
+# Suppress TensorFlow logging
+ENV TF_CPP_MIN_LOG_LEVEL=2
+ENV PYTHONWARNINGS="ignore"
 
 # The last thing that is required and cannot be set by default
 # is the SECRET_KEY
