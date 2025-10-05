@@ -11,7 +11,7 @@ services:
       #PRE_CALC_JSON_PATH: "/data/Audio_jsons"
       #PRE_CALC_AUDIO_PATH: "/data/Audio"
       #PRE_CALC_ALBUM_ART_PATH: "/data/Album_Art"
-      FRONTEND_URL: "http://localhost:3000"
+      FRONTEND_URL: "http://127.0.0.1:3000,http://localhost:3000,http://frontend:3000"
 
   frontend:
     image: remommender-frontend:latest
