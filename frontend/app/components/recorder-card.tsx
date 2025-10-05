@@ -9,6 +9,7 @@ import {Card, CardContent, CardDescription, CardHeader, CardTitle} from '~/compo
 import {Button} from '~/components/ui/button'
 import {Mic, Pause} from 'lucide-react'
 import type {Song} from "~/lib/AudioTypes"
+import {sendBackendRequest} from "~/lib/APIRequests"
 
 export function RecorderCard() {
   const [ isRecording, setIsRecording ] = useState<boolean>(false)
@@ -20,6 +21,7 @@ export function RecorderCard() {
     refreshTime: 20,
     arousalWeight: 0.5,
     valenceWeight: 0.5,
+    sessionEnabled: false,
     genreEnabled: false,
     genre: null,
     authenticityEnabled: false,
@@ -106,9 +108,25 @@ export function RecorderCard() {
         setPlaylistPosition(null)
         setPlaylist([newSong])
         setPlaylistPosition(0)
+        if(settingsRef.current.sessionEnabled) {
+          sendBackendRequest({
+            url: `/session/add-played-song?song_id=${newSong.id}`,
+            method: "POST"
+          })
+        }
       }
     })
   }
+
+  // When the component is unmounted, terminate the session.
+  useEffect(() => {
+    return () => {
+      sendBackendRequest({
+        url: "/session/end",
+        method: "POST"
+      })
+    }
+  }, []);
 
   return (
     <Card className="w-full max-w-sm">

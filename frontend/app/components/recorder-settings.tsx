@@ -23,8 +23,10 @@ import {
   SelectValue
 } from '~/components/ui/select'
 import React from 'react'
-import {Settings} from 'lucide-react'
+import {ArrowLeft, Settings} from 'lucide-react'
 import {Separator} from "~/components/ui/separator"
+import {sendBackendRequest} from "~/lib/APIRequests"
+import {toast} from "sonner"
 
 export enum RefreshOption {
   FIVE = 5,
@@ -74,6 +76,7 @@ export interface RecorderSettingsState {
   refreshTime: RefreshOption
   arousalWeight: number
   valenceWeight: number
+  sessionEnabled: boolean
   genreEnabled: boolean
   genre: Genre | null
   authenticityEnabled: boolean
@@ -106,6 +109,40 @@ export function RecorderSettings({ settings, setSettings }: RecorderSettingsProp
 
   function setWeights(value: number[]) {
     setSettings(s => ({ ...s, arousalWeight: 1 - value[0], valenceWeight: value[0] }))
+  }
+
+  function handleSessionChange(checked: boolean): void {
+    if(checked) {
+      sendBackendRequest({
+        url: "/session/start",
+        method: "POST",
+      }).then((response) => {
+        toast("The session was started successfully.")
+      })
+    } else {
+      sendBackendRequest({
+        url: "/session/end",
+        method: "POST",
+      }).then((response) => {
+        toast("The session was terminated.")
+      })
+    }
+
+    setSettings(s => ({
+      ...s,
+      sessionEnabled: checked
+    }))
+  }
+
+  function handleClearSession() {
+    if(settings.sessionEnabled) {
+      sendBackendRequest({
+        url: "/session/clear",
+        method: "POST",
+      }).then((response) => {
+        toast("The session was cleared successfully.")
+      })
+    }
   }
 
   return (
@@ -161,7 +198,33 @@ export function RecorderSettings({ settings, setSettings }: RecorderSettingsProp
               onValueChange={(val) => setWeights(val)}
             />
           </div>
+
           <Separator className="mt-2 mb-2" />
+
+          <div className="flex justify-between">
+            <div>
+              <Label>Session</Label>
+              <p className="text-xs text-muted-foreground mt-4 mb-4">Turning this setting on will ensure that no song is
+              played twice during this session.</p>
+              <Button
+                variant="outline"
+                onClick={handleClearSession}
+                disabled={!settings.sessionEnabled}
+                className="text-xs p-3"
+              >
+                Clear session
+              </Button>
+            </div>
+            <Switch
+              checked={settings.sessionEnabled}
+              onCheckedChange={handleSessionChange}
+            />
+          </div>
+
+          <Separator className="mt-2 mb-2" />
+
+          <h2 className="text-xl font-semibold tracking-tight">Filters</h2>
+
           <div className="grid gap-3">
             <div className="flex justify-between items-center">
               <Label>Genre</Label>
