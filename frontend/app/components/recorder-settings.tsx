@@ -76,6 +76,8 @@ export interface RecorderSettingsState {
   refreshTime: RefreshOption
   arousalWeight: number
   valenceWeight: number
+  invertArousal: boolean
+  invertValence: boolean
   sessionEnabled: boolean
   genreEnabled: boolean
   genre: Genre | null
@@ -117,7 +119,7 @@ export function RecorderSettings({ settings, setSettings }: RecorderSettingsProp
         url: "/session/start",
         method: "POST",
       }).then((response) => {
-        document.cookie = `sessionid=${response.data.session_id.value}`;
+        document.cookie = `sessionid=${response.data.session_id.value}`
         toast("The session was started successfully.")
       })
     } else {
@@ -125,7 +127,7 @@ export function RecorderSettings({ settings, setSettings }: RecorderSettingsProp
         url: "/session/end",
         method: "POST",
       }).then((response) => {
-        document.cookie = `sessionid=`;
+        document.cookie = `sessionid=`
         toast("The session was terminated.")
       })
     }
@@ -198,6 +200,40 @@ export function RecorderSettings({ settings, setSettings }: RecorderSettingsProp
               step={0.01}
               value={[settings.valenceWeight]}
               onValueChange={(val) => setWeights(val)}
+            />
+          </div>
+
+          <div className="flex justify-between mt-4">
+            <div>
+              <Label>Invert arousal</Label>
+              <p className="text-xs text-muted-foreground mt-4 mb-4">This will invert the arousal value, e.g., when your
+                speech yields a low arousal value, a song with a high arousal value will be recommended.</p>
+            </div>
+            <Switch
+              checked={settings.invertArousal}
+              onCheckedChange={(checked) => {
+                setSettings(s => ({
+                  ...s,
+                  invertArousal: checked
+                }))
+              }}
+            />
+          </div>
+
+          <div className="flex justify-between mt-2">
+            <div>
+              <Label>Invert valence</Label>
+              <p className="text-xs text-muted-foreground mt-4 mb-4">This will invert the valence value, e.g., when your
+                speech yields a low valence value, a song with a high valence value will be recommended.</p>
+            </div>
+            <Switch
+              checked={settings.invertValence}
+              onCheckedChange={(checked) => {
+                setSettings(s => ({
+                  ...s,
+                  invertValence: checked
+                }))
+              }}
             />
           </div>
 
