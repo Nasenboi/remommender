@@ -12,7 +12,9 @@ from .schemas import EmotionFeaturesSchema
 serprocessor = SERProcessor()
 
 
-def get_emotion_features_from_speech(file: UploadedFile) -> EmotionFeaturesSchema:
+def get_emotion_features_from_speech(
+    file: UploadedFile, invert_arousal: bool, invert_valence: bool
+) -> EmotionFeaturesSchema:
     """
     Extract emotion features from a speech audio file.
     :param file: Uploaded audio file
@@ -20,10 +22,15 @@ def get_emotion_features_from_speech(file: UploadedFile) -> EmotionFeaturesSchem
     """
     speech_emotion_result = serprocessor.process_audio_file(file)
 
-    return EmotionFeaturesSchema(
-        valence=speech_emotion_result.valence * 2 - 1,
-        arousal=speech_emotion_result.arousal * 2 - 1,
-    )
+    valence = speech_emotion_result.valence * 2 - 1
+    arousal = speech_emotion_result.arousal * 2 - 1
+
+    if invert_valence:
+        valence = -valence
+    if invert_arousal:
+        arousal = -arousal
+
+    return EmotionFeaturesSchema(valence=valence, arousal=arousal)
 
 
 def update_session_data(valence: float, arousal: float, session_data: SessionData) -> SessionData:
@@ -45,7 +52,7 @@ def calculate_array_switch_probability(
     Calculate the probability that a song should switch for a single array.
     :param session_data: Current session data
     :param arousal_weight: Weight for arousal value (default: 0.5)
-    :param valence_weight: Weight for valence value (default: 0.5)    
+    :param valence_weight: Weight for valence value (default: 0.5)
     :return: The calculated welford mean value and the switch probability as a float (0-1)
     """
 
