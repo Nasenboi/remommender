@@ -42,8 +42,12 @@ def upload_album(
 
 @albums_router.get("/", response=List[AlbumSchema])
 @paginate(PageNumberPagination, page_size=10)
-def list_albums(request):
-    return Album.objects.all()
+def list_albums(request, album_name: str = None):
+    qs = Album.objects.all()
+    if album_name:
+        qs = qs.filter(album__icontains=album_name)
+    qs = qs.order_by("album")
+    return qs
 
 
 @albums_router.get("/{album_id}", response=AlbumDetailSchema)
@@ -57,11 +61,25 @@ def get_album_details(request, album_id: UUID):
 
     return detail_album
 
+
+@albums_router.delete("/{album_id}")
+def delete_album(request, album_id: UUID, delete_songs: bool = True):
+    album = get_object_or_404(Album, id=album_id)
+    album.delete()
+
+    if delete_songs:
+        songs = Song.objects.filter(album_id=album_id)
+        songs.delete()
+
+    return {"deleted": True}
+
+
 @songs_router.delete("/{song_id}")
 def delete_song(request, song_id: UUID):
     song = get_object_or_404(Song, id=song_id)
     song.delete()
     return {"deleted": True}
+
 
 @songs_router.post("/")
 def create_and_upload_song(
@@ -118,3 +136,13 @@ def create_and_upload_song(
     )
 
     return SongSchema.from_orm(song)
+
+
+@songs_router.get("/", response=List[SongSchema])
+@paginate(PageNumberPagination, page_size=10)
+def list_songs(request, title: str = None):
+    qs = Song.objects.all()
+    if title:
+        qs = qs.filter(title__icontains=title)
+    qs = qs.order_by("title")
+    return qs
