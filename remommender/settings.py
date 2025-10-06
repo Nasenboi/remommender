@@ -144,3 +144,4 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Allow frontend API access by setting the CORS headers accordingly
 CORS_ALLOWED_ORIGINS = [url.strip() for url in os.getenv("FRONTEND_URL", "").split(",") if url.strip()]
+CORS_ALLOW_CREDENTIALS = True

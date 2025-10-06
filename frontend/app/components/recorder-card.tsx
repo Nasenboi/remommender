@@ -19,8 +19,11 @@ export function RecorderCard() {
 
   const [settings, setSettings] = useState<RecorderSettingsState>({
     refreshTime: 20,
+    switchThreshold: 0,
     arousalWeight: 0.5,
     valenceWeight: 0.5,
+    invertArousal: false,
+    invertValence: false,
     sessionEnabled: false,
     genreEnabled: false,
     genre: null,
@@ -81,6 +84,10 @@ export function RecorderCard() {
   // are copied and not referenced. To solve this, we have to create a ref which updates alongside the currentSong within
   // the AudioContext. We can access this ref in the refresh function to check whether the value of currentSong needs to
   // be updated.
+  // This code is smelly. A better solution would be to use objects, e.g. create a PlaybackManager class and an instance
+  // which can be loaded from the audio context. This could then be passed to the refresh function. It would still work
+  // because the reference to the PlaybackManager object would not change during the lifecycle of a user's visit, making
+  // the use of refs unnecessary. This code was not altered due to time constraints.
   const playlistRef = useRef(playlist)
   const playlistPositionRef = useRef(playlistPosition)
   useEffect(() => {
@@ -103,8 +110,10 @@ export function RecorderCard() {
       if(playlistRef.current && playlistPositionRef.current) {
         playingSong = playlistRef.current[playlistPositionRef.current]
       }
-      
-      if(newSong.id !== playingSong?.id) {
+
+      // The song should change if it is not the same as the current song and the switch probability is above the
+      // threshold specified by the user.
+      if(newSong.id !== playingSong?.id && result.switch_probability >= settingsRef.current.switchThreshold) {
         setPlaylistPosition(null)
         setPlaylist([newSong])
         setPlaylistPosition(0)
@@ -124,6 +133,8 @@ export function RecorderCard() {
       sendBackendRequest({
         url: "/session/end",
         method: "POST"
+      }).then((res) => {
+        document.cookie = "sessionid="
       })
     }
   }, []);

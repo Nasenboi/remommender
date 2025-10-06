@@ -23,10 +23,11 @@ import {
   SelectValue
 } from '~/components/ui/select'
 import React from 'react'
-import {ArrowLeft, Settings} from 'lucide-react'
+import {ArrowLeft, Info, Settings} from 'lucide-react'
 import {Separator} from "~/components/ui/separator"
 import {sendBackendRequest} from "~/lib/APIRequests"
 import {toast} from "sonner"
+import {Tooltip, TooltipContent, TooltipTrigger} from "~/components/ui/tooltip"
 
 export enum RefreshOption {
   FIVE = 5,
@@ -74,8 +75,11 @@ export enum Genre {
 
 export interface RecorderSettingsState {
   refreshTime: RefreshOption
+  switchThreshold: number
   arousalWeight: number
   valenceWeight: number
+  invertArousal: boolean
+  invertValence: boolean
   sessionEnabled: boolean
   genreEnabled: boolean
   genre: Genre | null
@@ -117,6 +121,7 @@ export function RecorderSettings({ settings, setSettings }: RecorderSettingsProp
         url: "/session/start",
         method: "POST",
       }).then((response) => {
+        document.cookie = `sessionid=${response.data.session_id.value}`
         toast("The session was started successfully.")
       })
     } else {
@@ -124,6 +129,7 @@ export function RecorderSettings({ settings, setSettings }: RecorderSettingsProp
         url: "/session/end",
         method: "POST",
       }).then((response) => {
+        document.cookie = `sessionid=`
         toast("The session was terminated.")
       })
     }
@@ -182,6 +188,37 @@ export function RecorderSettings({ settings, setSettings }: RecorderSettingsProp
 
           <div className="grid gap-3">
             <div className="flex justify-between items-center">
+              <div>
+                <Label className="inline">Switch Threshold</Label>
+                <Tooltip>
+                  <TooltipTrigger>
+                    <Info className="inline text-muted-foreground size-5 ml-2"/>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    The backend calculates how likely the currently playing song should change. This is based on the<br />
+                    difference between the currently recorded emotion and the previously recorded emotion, i.e. when<br />
+                    the emotion changes drastically, it is more likely that the song should change and the value is<br />
+                    therefore higher. This switch probability lies between 0 and 100%. With the slider below, you can<br />
+                    determine at which switch probability value the song should change.
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+
+              <span className="text-sm text-muted-foreground w-[50px] text-right">
+                {(settings.switchThreshold * 100).toFixed(0)}%
+              </span>
+            </div>
+            <Slider
+              min={0}
+              max={1}
+              step={0.01}
+              value={[settings.switchThreshold]}
+              onValueChange={(val) => setSettings(s => ({ ...s, switchThreshold: val[0] }))}
+            />
+          </div>
+
+          <div className="grid gap-3">
+            <div className="flex justify-between items-center">
               <Label>Arousal / Valence Weight</Label>
               <div className="flex items-center gap-2">
                 <span className="text-xs text-muted-foreground w-[100px] text-right">
@@ -196,6 +233,40 @@ export function RecorderSettings({ settings, setSettings }: RecorderSettingsProp
               step={0.01}
               value={[settings.valenceWeight]}
               onValueChange={(val) => setWeights(val)}
+            />
+          </div>
+
+          <div className="flex justify-between mt-4">
+            <div>
+              <Label>Invert arousal</Label>
+              <p className="text-xs text-muted-foreground mt-4 mb-4">This will invert the arousal value, e.g., when your
+                speech yields a low arousal value, a song with a high arousal value will be recommended.</p>
+            </div>
+            <Switch
+              checked={settings.invertArousal}
+              onCheckedChange={(checked) => {
+                setSettings(s => ({
+                  ...s,
+                  invertArousal: checked
+                }))
+              }}
+            />
+          </div>
+
+          <div className="flex justify-between mt-2">
+            <div>
+              <Label>Invert valence</Label>
+              <p className="text-xs text-muted-foreground mt-4 mb-4">This will invert the valence value, e.g., when your
+                speech yields a low valence value, a song with a high valence value will be recommended.</p>
+            </div>
+            <Switch
+              checked={settings.invertValence}
+              onCheckedChange={(checked) => {
+                setSettings(s => ({
+                  ...s,
+                  invertValence: checked
+                }))
+              }}
             />
           </div>
 

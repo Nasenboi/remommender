@@ -1,7 +1,10 @@
 import axios, {AxiosError, type AxiosRequestConfig, type AxiosResponse} from "axios"
 import {toast} from "sonner"
 
-export const backend = axios.create({ baseURL: import.meta.env.VITE_BACKEND_BASE_URL })
+export const backend = axios.create({
+  baseURL: import.meta.env.VITE_BACKEND_BASE_URL,
+  withCredentials: true
+ })
 
 export function getAbsoluteBackendURL(relativeURL: string) {
   return import.meta.env.VITE_BACKEND_BASE_URL + relativeURL
