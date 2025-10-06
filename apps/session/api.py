@@ -8,7 +8,7 @@ router = Router(tags=["sessions"])
 @router.post("/start")
 def start_session(request):
     request.session["data"] = SessionData().model_dump()
-    return {"session_key": request.session.session_key, "message": "Session started"}
+    return {"message": "Session started"}
 
 
 @router.post("/add-played-song")
