@@ -142,6 +142,11 @@ STATIC_URL = "static/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# Allow frontend API access by setting the CORS headers accordingly
+SESSION_COOKIE_SAMESITE = "None"
+SESSION_COOKIE_SECURE = True  # No HTTPS yet tho :( ... I still trust us!
+SESSION_COOKIE_HTTPONLY = True
 CORS_ALLOWED_ORIGINS = [url.strip() for url in os.getenv("FRONTEND_URL", "").split(",") if url.strip()]
 CORS_ALLOW_CREDENTIALS = True
+CSRF_COOKIE_SAMESITE = "None"
+CSRF_COOKIE_SECURE = True
+CSRF_TRUSTED_ORIGINS = CORS_ALLOWED_ORIGINS
