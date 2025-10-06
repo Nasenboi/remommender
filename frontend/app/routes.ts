@@ -6,6 +6,9 @@ export default [
     ...prefix("albums", [
       index("routes/albums.tsx"),
       route(":albumId", "routes/album-detail.tsx")
+    ]),
+    ...prefix("songs", [
+      route("add", "routes/add-song.tsx")
     ])
   ])
 ] satisfies RouteConfig;

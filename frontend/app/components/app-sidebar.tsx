@@ -7,7 +7,7 @@ import {
   SidebarMenu, SidebarMenuButton, SidebarMenuItem
 } from '~/components/ui/sidebar'
 import {Link, useLocation} from "react-router"
-import {LibraryBig, Speech} from "lucide-react"
+import {LibraryBig, PlusCircle, Speech} from "lucide-react"
 
 export function AppSidebar() {
   const location = useLocation()
@@ -37,6 +37,13 @@ export function AppSidebar() {
                 <SidebarMenuButton asChild isActive={location.pathname.startsWith("/library/albums")}>
                   <Link to="/library/albums">
                     <LibraryBig></LibraryBig> Albums
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild isActive={location.pathname === "/library/songs/add"}>
+                  <Link to="/library/songs/add">
+                    <PlusCircle /> Add new song
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
