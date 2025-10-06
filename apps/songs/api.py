@@ -46,6 +46,11 @@ def list_albums(request):
     return Album.objects.all()
 
 
+@albums_router.get("/all", response=List[AlbumSchema])
+def list_all_albums(request):
+    return Album.objects.all()
+
+
 @albums_router.get("/{album_id}", response=AlbumDetailSchema)
 def get_album_details(request, album_id: UUID):
     album = Album.objects.filter(id=album_id).first()
