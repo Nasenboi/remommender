@@ -12,6 +12,7 @@ export function getAbsoluteBackendURL(relativeURL: string) {
 
 export async function sendBackendRequest<T = any, R = AxiosResponse<T>, D = any>(config: AxiosRequestConfig<D>): Promise<R> {
   try {
+    config.withCredentials = true
     return await backend.request<T, R, D>(config)
   } catch (_error) {
     if (!(_error instanceof AxiosError)) {

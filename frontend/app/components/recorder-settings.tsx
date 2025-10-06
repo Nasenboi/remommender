@@ -121,15 +121,13 @@ export function RecorderSettings({ settings, setSettings }: RecorderSettingsProp
         url: "/session/start",
         method: "POST",
       }).then((response) => {
-        document.cookie = `sessionid=${response.data.session_id.value}`
-        toast("The session was started successfully.")
+        toast("A new session was started.")
       })
     } else {
       sendBackendRequest({
         url: "/session/end",
         method: "POST",
       }).then((response) => {
-        document.cookie = `sessionid=`
         toast("The session was terminated.")
       })
     }
