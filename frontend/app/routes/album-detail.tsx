@@ -1,5 +1,5 @@
 import type { Route } from "./+types/album-detail"
-import type {Album, AlbumShort, Song} from "~/lib/AudioTypes"
+import type {Album, Song} from "~/lib/AudioTypes"
 import {useEffect, useState} from "react"
 import {Button} from "~/components/ui/button"
 import {ArrowLeft, MoreVertical, Play, Trash2} from "lucide-react"
@@ -9,6 +9,7 @@ import {useNavigate, useParams} from "react-router"
 import {toast} from "sonner"
 import {getAbsoluteBackendURL, sendBackendRequest} from "~/lib/APIRequests"
 import {useAudioContext} from "~/context/audio-context"
+import SongFeatureDialog from "~/components/song-feature-dialog"
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -19,9 +20,10 @@ export function meta({}: Route.MetaArgs) {
 
 export default function AlbumDetailsPage() {
   const [album, setAlbum] = useState<Album | null>(null)
+
   const params = useParams()
   const navigate = useNavigate()
-  const { playlist, setPlaylist, setPlaylistPosition } = useAudioContext()
+  const { setPlaylist, setPlaylistPosition } = useAudioContext()
 
   const fetchAlbum = () => {
     setAlbum(null)
@@ -129,6 +131,10 @@ export default function AlbumDetailsPage() {
                   <Play className="w-4 h-4"/>
                 </Button>
 
+                <SongFeatureDialog
+                  song={song}
+                ></SongFeatureDialog>
+
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button size="icon" variant="ghost">
@@ -136,6 +142,7 @@ export default function AlbumDetailsPage() {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
+
                     <DropdownMenuItem
                       className="cursor-pointer"
                       onClick={() => handleDeleteSong(song)}
