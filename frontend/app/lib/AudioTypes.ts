@@ -1,7 +1,7 @@
 export type Song = {
   id: string
   title: string
-  album: string
+  album: AlbumShort
   artist: string
   duration_s: number
   features: SongFeatures
