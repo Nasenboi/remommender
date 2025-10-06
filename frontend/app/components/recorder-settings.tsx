@@ -23,10 +23,11 @@ import {
   SelectValue
 } from '~/components/ui/select'
 import React from 'react'
-import {ArrowLeft, Settings} from 'lucide-react'
+import {ArrowLeft, Info, Settings} from 'lucide-react'
 import {Separator} from "~/components/ui/separator"
 import {sendBackendRequest} from "~/lib/APIRequests"
 import {toast} from "sonner"
+import {Tooltip, TooltipContent, TooltipTrigger} from "~/components/ui/tooltip"
 
 export enum RefreshOption {
   FIVE = 5,
@@ -74,6 +75,7 @@ export enum Genre {
 
 export interface RecorderSettingsState {
   refreshTime: RefreshOption
+  switchThreshold: number
   arousalWeight: number
   valenceWeight: number
   invertArousal: boolean
@@ -182,6 +184,37 @@ export function RecorderSettings({ settings, setSettings }: RecorderSettingsProp
                 ))}
               </SelectContent>
             </Select>
+          </div>
+
+          <div className="grid gap-3">
+            <div className="flex justify-between items-center">
+              <div>
+                <Label className="inline">Switch Threshold</Label>
+                <Tooltip>
+                  <TooltipTrigger>
+                    <Info className="inline text-muted-foreground size-5 ml-2"/>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    The backend calculates how likely the currently playing song should change. This is based on the<br />
+                    difference between the currently recorded emotion and the previously recorded emotion, i.e. when<br />
+                    the emotion changes drastically, it is more likely that the song should change and the value is<br />
+                    therefore higher. This switch probability lies between 0 and 100%. With the slider below, you can<br />
+                    determine at which switch probability value the song should change.
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+
+              <span className="text-sm text-muted-foreground w-[50px] text-right">
+                {(settings.switchThreshold * 100).toFixed(0)}%
+              </span>
+            </div>
+            <Slider
+              min={0}
+              max={1}
+              step={0.01}
+              value={[settings.switchThreshold]}
+              onValueChange={(val) => setSettings(s => ({ ...s, switchThreshold: val[0] }))}
+            />
           </div>
 
           <div className="grid gap-3">
