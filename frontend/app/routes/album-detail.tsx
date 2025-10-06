@@ -85,12 +85,12 @@ export default function AlbumDetailsPage() {
         <div className="flex gap-6 items-start">
           <img
             src={getAbsoluteBackendURL(album.artwork_url)}
-            alt={album.album}
+            alt={album.album_name}
             className="w-48 h-48 object-cover rounded-md shadow"
           />
           <div className="flex flex-col justify-between h-full">
             <div>
-              <h1 className="text-3xl font-bold">{album.album}</h1>
+              <h1 className="text-3xl font-bold">{album.album_name}</h1>
               <p className="text-muted-foreground text-sm mt-2">{album.artist}</p>
               <p className="text-muted-foreground text-sm mt-1">
                 {album.songs.length} Song{album.songs.length !== 1 ? "s" : ""}

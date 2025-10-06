@@ -26,10 +26,10 @@ export function AlbumCard({ album }: AlbumCardProps) {
       <Card className="overflow-hidden border-0 bg-transparent shadow-none">
         <CardContent className="p-4">
           <div className="w-full aspect-square bg-zinc-300 dark:bg-zinc-800 mb-4">
-            <Artwork url={album.artwork_url} title={album.album} />
+            <Artwork url={album.artwork_url} title={album.album_name} />
           </div>
           <CardTitle className="text-base font-semibold group-hover:underline">
-            {album.album}
+            {album.album_name}
           </CardTitle>
           <p className="text-sm text-muted-foreground">{album.artist}</p>
         </CardContent>

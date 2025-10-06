@@ -18,7 +18,7 @@ EmptyStrToDefault = Annotated[T, WrapValidator(_empty_str_to_default)]
 
 class AlbumSchema(Schema):
     id: UUID
-    album: str
+    album_name: str
     artist: str
     artwork_url: str
 

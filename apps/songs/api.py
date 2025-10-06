@@ -1,5 +1,3 @@
-import os
-import tempfile
 from typing import List
 from uuid import UUID
 
@@ -10,9 +8,9 @@ from ninja.files import UploadedFile
 from ninja.pagination import PageNumberPagination, paginate
 
 from apps.core.models import Album, Song, SongFeatures, SongGenres
-from apps.core.schemas import AlbumSchema, SongCreateSchema, SongFeaturesSchema, SongGenresSchema, SongSchema
+from apps.core.schemas import AlbumSchema, SongCreateSchema, SongSchema
 
-from .feature_extraction.song_info_extractor import SongInfoExtractor
+from .methods import calculate_genres_and_features
 from .schemas import AlbumDetailSchema
 
 songs_router = Router(tags=["songs"])
@@ -32,11 +30,11 @@ def upload_album(
     # Check if the artwork_file already exists
     # will not return an error!
     # should do this in the future, maybe
-    existing_artwork_file = Album.objects.filter(album=album_name, artist=artist).first()
+    existing_artwork_file = Album.objects.filter(album_name=album_name, artist=artist).first()
     if existing_artwork_file:
         return {"id": existing_artwork_file.id}
 
-    album = Album.objects.create(album=album_name, artwork_file=artwork_file, artist=artist)
+    album = Album.objects.create(album_name=album_name, artwork_file=artwork_file, artist=artist)
     return {"id": album.id}
 
 
@@ -45,8 +43,8 @@ def upload_album(
 def list_albums(request, album_name: str = None):
     qs = Album.objects.all()
     if album_name:
-        qs = qs.filter(album__icontains=album_name)
-    qs = qs.order_by("album")
+        qs = qs.filter(album_name__icontains=album_name)
+    qs = qs.order_by("album_name")
     return qs
 
 
@@ -74,21 +72,12 @@ def delete_album(request, album_id: UUID, delete_songs: bool = True):
     return {"deleted": True}
 
 
-@songs_router.delete("/{song_id}")
-def delete_song(request, song_id: UUID):
-    song = get_object_or_404(Song, id=song_id)
-    song.delete()
-    return {"deleted": True}
-
-
 @songs_router.post("/")
 def create_and_upload_song(
     request,
     song: SongCreateSchema = Form(...),
     audio_file: UploadedFile = File(...),
 ):
-    print(song)
-
     if song.album_id:
         album = Album.objects.get(id=song.album_id)
     else:
@@ -97,35 +86,7 @@ def create_and_upload_song(
     # calculate features if not present:
     if not song.features or not song.genres:
         # ToDo: Move to methods
-        with tempfile.NamedTemporaryFile(delete=True, suffix=os.path.splitext(audio_file.name)[1]) as tmp_file:
-            # Write uploaded file content to temporary file
-            tmp_file.write(audio_file.file.read())
-            tmp_path = tmp_file.name
-
-            song_info_extractor = SongInfoExtractor(tmp_path)
-            song.duration_s = song_info_extractor.get_duration()
-            essentia_genre_features = song_info_extractor.extract_essentia_genre_features()
-            print(essentia_genre_features)
-            song.genres = SongGenresSchema(
-                all_genres=essentia_genre_features["all_genres"], top3_genres=essentia_genre_features["top3_genres"]
-            )
-
-            gmbi_features_frames = song_info_extractor.extract_gmbi_features_frames()
-            print(gmbi_features_frames)
-            essentia_dl_features = song_info_extractor.extract_essentia_dl_features()
-            print(essentia_dl_features)
-
-            song.features = SongFeaturesSchema(
-                valence=gmbi_features_frames["mean"]["valence"],
-                arousal=gmbi_features_frames["mean"]["arousal"],
-                authenticity=gmbi_features_frames["mean"]["authenticity"],
-                timeliness=gmbi_features_frames["mean"]["timeliness"],
-                complexity=gmbi_features_frames["mean"]["complexity"],
-                danceability=essentia_dl_features["mean"]["danceability"],
-                tonal=essentia_dl_features["mean"]["tonal"],
-                voice=essentia_dl_features["mean"]["voice"],
-                bpm=essentia_dl_features["mean"]["bpm"],
-            )
+        song.genres, song.features, song.duration_s = calculate_genres_and_features(audio_file)
 
     song = Song.objects.create(
         **song.model_dump(exclude={"audio_file_id", "artwork_id", "features", "genres"}),
@@ -146,3 +107,10 @@ def list_songs(request, title: str = None):
         qs = qs.filter(title__icontains=title)
     qs = qs.order_by("title")
     return qs
+
+
+@songs_router.delete("/{song_id}")
+def delete_song(request, song_id: UUID):
+    song = get_object_or_404(Song, id=song_id)
+    song.delete()
+    return {"deleted": True}

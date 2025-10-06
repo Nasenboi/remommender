@@ -1,10 +1,15 @@
 import json
 import os
+import tempfile
 from typing import Tuple
 
 from django.core.files import File
+from ninja.files import UploadedFile
 
 from apps.core.models import Album, Song, SongFeatures, SongGenres
+from apps.core.schemas import SongFeaturesSchema, SongGenresSchema
+
+from .feature_extraction.song_info_extractor import SongInfoExtractor
 
 
 def read_json(name: str) -> dict:
@@ -33,7 +38,7 @@ def convert_song_to_db_format(song: dict) -> Tuple[dict, dict]:
         "genres": song["features"]["genres"],
     }
     db_album = {
-        "album": song["album"],
+        "album_name": song["album"],
         "artist": song["artist"],
     }
     return db_song, db_album
@@ -45,10 +50,10 @@ def add_album_to_db(name: str, album_name: str = None, artist: str = None) -> st
     Returns the id of the object.
     """
     path = os.path.join(os.getenv("PRE_CALC_ALBUM_ART_PATH"), name)
-    artwork_file = Album.objects.filter(album=album_name, artist=artist).first()
+    artwork_file = Album.objects.filter(album_name=album_name, artist=artist).first()
     if not artwork_file:
         with open(path, "rb") as f:
-            artwork_file = Album.objects.create(artwork_file=File(f, name=name), album=album_name, artist=artist)
+            artwork_file = Album.objects.create(artwork_file=File(f, name=name), album_name=album_name, artist=artist)
     return artwork_file.id
 
 
@@ -72,7 +77,7 @@ def add_json_to_db(name: str) -> str:
         # print(f"Existing {existing_song.title} from {existing_song.artist} found in db!")
         return existing_song.id
     try:
-        album_id = add_album_to_db(raw_data["ids"]["artwork_id"], db_album["album"], db_album["artist"])
+        album_id = add_album_to_db(raw_data["ids"]["artwork_id"], db_album["album_name"], db_album["artist"])
         album = Album.objects.get(id=album_id)
 
         song_path = os.path.join(os.getenv("PRE_CALC_AUDIO_PATH"), raw_data["ids"]["track_id"])
@@ -111,3 +116,37 @@ def check_and_add_pre_calculated_songs_to_db() -> None:
 
     for json_file in json_files:
         add_json_to_db(json_file)
+
+
+def calculate_genres_and_features(audio_file: UploadedFile) -> Tuple[SongGenresSchema, SongFeaturesSchema, float]:
+    with tempfile.NamedTemporaryFile(delete=True, suffix=os.path.splitext(audio_file.name)[1]) as tmp_file:
+        # Write uploaded file content to temporary file
+        tmp_file.write(audio_file.file.read())
+        tmp_path = tmp_file.name
+
+        song_info_extractor = SongInfoExtractor(tmp_path)
+        duration_s = song_info_extractor.get_duration()
+
+        essentia_genre_features = song_info_extractor.extract_essentia_genre_features()
+
+        genres = SongGenresSchema(
+            all_genres=essentia_genre_features["all_genres"], top3_genres=essentia_genre_features["top3_genres"]
+        )
+
+        gmbi_features_frames = song_info_extractor.extract_gmbi_features_frames()
+
+        essentia_dl_features = song_info_extractor.extract_essentia_dl_features()
+
+        features = SongFeaturesSchema(
+            valence=gmbi_features_frames["mean"]["valence"],
+            arousal=gmbi_features_frames["mean"]["arousal"],
+            authenticity=gmbi_features_frames["mean"]["authenticity"],
+            timeliness=gmbi_features_frames["mean"]["timeliness"],
+            complexity=gmbi_features_frames["mean"]["complexity"],
+            danceability=essentia_dl_features["mean"]["danceability"],
+            tonal=essentia_dl_features["mean"]["tonal"],
+            voice=essentia_dl_features["mean"]["voice"],
+            bpm=essentia_dl_features["mean"]["bpm"],
+        )
+
+    return genres, features, duration_s

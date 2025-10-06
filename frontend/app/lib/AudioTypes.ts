@@ -67,7 +67,7 @@ export type AllGenres = {
 
 export interface AlbumShort {
   id: string
-  album: string
+  album_name: string
   artist: string
   artwork_url: string
 }
