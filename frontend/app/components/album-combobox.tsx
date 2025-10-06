@@ -62,7 +62,7 @@ export function AlbumCombobox({ album, setAlbum }: AlbumComboboxProps) {
           className="w-xl justify-between"
         >
           {value
-            ? `${albums.find((a) => a.id === value)?.artist} - ${albums.find((a) => a.id === value)?.album}`
+            ? `${albums.find((a) => a.id === value)?.artist} - ${albums.find((a) => a.id === value)?.album_name}`
             : "Select album..."}
           <ChevronsUpDown className="opacity-50" />
         </Button>
@@ -80,9 +80,9 @@ export function AlbumCombobox({ album, setAlbum }: AlbumComboboxProps) {
                   key={album.id}
                   value={album.id}
                   onSelect={handleValueChange}
-                  keywords={[album.album, album.artist]}
+                  keywords={[album.album_name, album.artist]}
                 >
-                  {album.artist} - {album.album}
+                  {album.artist} - {album.album_name}
                   <Check
                     className={cn(
                       "ml-auto",
