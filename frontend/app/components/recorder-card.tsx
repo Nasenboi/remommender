@@ -4,14 +4,20 @@
 import {useAudioContext} from '~/context/audio-context'
 import {RecorderSettings, type RecorderSettingsState} from '~/components/recorder-settings'
 import React, {useEffect, useRef, useState} from 'react'
-import AudioRecorder from '~/lib/AudioRecorder'
+import AudioRecorder, {type AudioResult} from '~/lib/AudioRecorder'
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from '~/components/ui/card'
 import {Button} from '~/components/ui/button'
 import {Mic, Pause} from 'lucide-react'
 import type {Song} from "~/lib/AudioTypes"
 import {sendBackendRequest} from "~/lib/APIRequests"
 
-export function RecorderCard() {
+
+interface RecorderCardProps {
+  audioHistory: AudioResult[]
+  setAudioHistory: React.Dispatch<React.SetStateAction<AudioResult[]>>
+}
+
+export function RecorderCard({ audioHistory, setAudioHistory }: RecorderCardProps) {
   const [ isRecording, setIsRecording ] = useState<boolean>(false)
   const audioRecorder = useRef<AudioRecorder | null>(null)
   const [ refreshInterval, setRefreshInterval ] = useState<any>(null)
@@ -56,8 +62,6 @@ export function RecorderCard() {
     if(isRecording) {
       audioRecorder.current?.stop()
       setIsRecording(false)
-      setPlaylistPosition(null)
-      setPlaylist(null)
     } else {
       audioRecorder.current?.start().then(() => {
         setIsRecording(true)
@@ -101,6 +105,11 @@ export function RecorderCard() {
   useEffect(() => {
     settingsRef.current = settings
   }, [settings])
+  // same as above, but for the audio history
+  const audioHistoryRef = useRef(audioHistory)
+  useEffect(() => {
+    audioHistoryRef.current = audioHistory
+  }, [audioHistory])
 
   function refresh() {
     audioRecorder.current?.refreshAndGetResult(settingsRef.current).then((result) => {
@@ -123,13 +132,21 @@ export function RecorderCard() {
             method: "POST"
           })
         }
+
+        // Add the result to the audio history and make sure the history does not exceed 15 items
+        setAudioHistory([result, ...audioHistoryRef.current].slice(0,15))
       }
     })
   }
 
-  // When the component is unmounted, terminate the session.
+  // When the component is unmounted, terminate the session, stop recording etc.
   useEffect(() => {
     return () => {
+      audioRecorder.current?.stop()
+      setIsRecording(false)
+      if(refreshInterval) {
+        clearInterval(refreshInterval)
+      }
       sendBackendRequest({
         url: "/session/end",
         method: "POST"
@@ -140,7 +157,7 @@ export function RecorderCard() {
   }, []);
 
   return (
-    <Card className="w-full max-w-sm">
+    <Card className="w-full">
       <CardHeader>
         <CardTitle>Play music</CardTitle>
         <CardDescription>

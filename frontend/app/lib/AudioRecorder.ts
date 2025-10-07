@@ -1,7 +1,7 @@
 'use client'
 
 import {sendBackendRequest} from '~/lib/APIRequests'
-import type {Song} from '~/lib/AudioTypes'
+import type {Song, SongFeatures} from '~/lib/AudioTypes'
 import { FFmpeg } from '@ffmpeg/ffmpeg'
 import { fetchFile } from '@ffmpeg/util'
 import coreURL from '@ffmpeg/core?url'
@@ -9,9 +9,19 @@ import wasmURL from '@ffmpeg/core/wasm?url'
 import type {RecorderSettingsState} from '~/components/recorder-settings'
 import {toast} from "sonner"
 
-type AudioResult = {
+export type AudioResult = {
   song: Song
-  features: any //TODO
+  features: {
+    valence: number
+    arousal: number
+    authenticity: number | null
+    timeliness: number | null
+    complexity: number | null
+    danceability: number | null
+    tonal: number | null
+    voice: number | null
+    bpm: number | null
+  }
   switch_probability: number
 }
 
