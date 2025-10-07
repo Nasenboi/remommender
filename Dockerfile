@@ -24,7 +24,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 # RUN pip install --extra-index-url https://download.pytorch.org/whl/cpu --no-cache-dir librosa django-ninja scikit-learn==1.0.2 python-dotenv welford typing annoy transformers pandas torch essentia essentia-tensorflow matplotlib django-cors-headers tempocnn
 
 COPY . /remommender
-RUN chmod +x runserver.sh
+
+RUN sed -i 's/\r$//' runserver.sh && \
+    chmod +x runserver.sh
 
 ENTRYPOINT ["./runserver.sh"]
 CMD []
