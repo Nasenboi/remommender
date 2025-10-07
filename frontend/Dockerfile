@@ -11,6 +11,7 @@ RUN npm ci --omit=dev
 FROM node:20-alpine AS build-env
 COPY . /app/
 COPY --from=development-dependencies-env /app/node_modules /app/node_modules
+ENV VITE_BACKEND_BASE_URL="http://127.0.0.1:8000"
 WORKDIR /app
 RUN npm run build
 
