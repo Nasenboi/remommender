@@ -36,7 +36,7 @@ export default function Home() {
       </div>
 
       { showStats
-        ? <div className="w-full max-w-6xl pr-5 pl-5 pb-5">
+        ? <div className="w-full max-w-7xl pr-5 pl-5 pb-5">
             <StatsCard audioHistory={audioResultHistory}></StatsCard>
           </div>
         : null
