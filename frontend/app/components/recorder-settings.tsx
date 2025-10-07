@@ -125,9 +125,12 @@ export function RecorderSettings({ settings, setSettings }: RecorderSettingsProp
       })
     } else {
       sendBackendRequest({
+        url: "/session/clear",
+        method: "POST",
+      }).then(() => sendBackendRequest({
         url: "/session/end",
         method: "POST",
-      }).then((response) => {
+      })).then((response) => {
         toast("The session was terminated.")
       })
     }
