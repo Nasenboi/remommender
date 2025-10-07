@@ -16,6 +16,12 @@ interface ChartDataItem {
   songTitle: string
 }
 
+interface SwitchProbabilityChartDataItem {
+  recommendationNumber: number
+  probability: number
+  songTitle: string
+}
+
 
 interface TooltipWithSongProps extends TooltipProps<ValueType, NameType> {}
 
@@ -44,6 +50,7 @@ export function StatsCard({ audioHistory }: StatsCardProps) {
 
   const arousalChartData: ChartDataItem[] = []
   const valenceChartData: ChartDataItem[] = []
+  const switchProbabilityChartData: SwitchProbabilityChartDataItem[] = []
 
   for(let i = audioHistory.length - 1; i >= 0; i--) {
     const result = audioHistory[i]
@@ -57,6 +64,11 @@ export function StatsCard({ audioHistory }: StatsCardProps) {
       recommendationNumber: i+1,
       speech: result.speech_features.valence,
       song: result.song.features.valence,
+      songTitle: result.song.title
+    })
+    switchProbabilityChartData.push({
+      recommendationNumber: i+1,
+      probability: result.switch_probability,
       songTitle: result.song.title
     })
   }
@@ -83,9 +95,16 @@ export function StatsCard({ audioHistory }: StatsCardProps) {
     },
   } satisfies ChartConfig
 
+  const switchProbabilityChartConfig = {
+    probability: {
+      label: "Switch Probability",
+      color: "var(--chart-5)",
+    },
+  } satisfies ChartConfig
+
   return (
-    <div className="w-full flex flex-col md:flex-row gap-4">
-      <Card className="w-full md:w-1/2">
+    <div className="w-full flex flex-col lg:flex-row gap-4">
+      <Card className="w-full lg:w-1/3">
         <CardHeader>
           <CardTitle>Arousal chart</CardTitle>
           <CardDescription>
@@ -141,7 +160,7 @@ export function StatsCard({ audioHistory }: StatsCardProps) {
         <CardFooter>
         </CardFooter>
       </Card>
-      <Card className="w-full md:w-1/2">
+      <Card className="w-full lg:w-1/3">
         <CardHeader>
           <CardTitle>Valence chart</CardTitle>
           <CardDescription>
@@ -190,6 +209,56 @@ export function StatsCard({ audioHistory }: StatsCardProps) {
                 fill="var(--color-song)"
                 fillOpacity={0.4}
                 stroke="var(--color-song)"
+              />
+            </AreaChart>
+          </ChartContainer>
+        </CardContent>
+        <CardFooter>
+        </CardFooter>
+      </Card>
+      <Card className="w-full lg:w-1/3">
+        <CardHeader>
+          <CardTitle>Switch probability chart</CardTitle>
+          <CardDescription>
+            This chart shows the switch probability, meaning how likely the song should change.
+            The value on the right is the newest.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ChartContainer config={switchProbabilityChartConfig}>
+            <AreaChart
+              accessibilityLayer
+              data={switchProbabilityChartData}
+              margin={{
+                left: 12,
+                right: 12,
+              }}
+            >
+              <CartesianGrid vertical={false} />
+              <XAxis
+                dataKey="recommendationNumber"
+                tickLine={false}
+                axisLine={false}
+                tickMargin={8}
+                domain={[15, 1]}
+              />
+              <YAxis
+                tickLine={false}
+                axisLine={false}
+                tickMargin={8}
+                tickCount={3}
+                domain={[0, 1]}
+              />
+              <ChartTooltip
+                cursor={false}
+                content={<TooltipWithSong />}
+              />
+              <Area
+                dataKey="probability"
+                type="linear"
+                fill="var(--color-probability)"
+                fillOpacity={0.4}
+                stroke="var(--color-probability)"
               />
             </AreaChart>
           </ChartContainer>
