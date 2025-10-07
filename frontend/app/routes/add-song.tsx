@@ -64,7 +64,7 @@ type FormValues = z.infer<typeof formSchema>
 export default function UploadSongPage() {
   const [albumTab, setAlbumTab] = useState<'existing' | 'new'>('existing')
   const [existingAlbum, setExistingAlbum] = useState<AlbumShort | null>(null)
-  const [showSpinner, setShowSpinner] = useState<boolean>(false)
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
 
   // For redirecting the user after the song has been uploaded
   const navigate = useNavigate()
@@ -86,8 +86,8 @@ export default function UploadSongPage() {
   })
 
   const onSubmit = async (data: FormValues) => {
-    // While the song is uploading, show a spinner
-    setShowSpinner(true)
+    // This will show a spinner and set the submit button to disabled.
+    setIsSubmitting(true)
 
     let albumId: string
 
@@ -110,7 +110,7 @@ export default function UploadSongPage() {
       // If we're using an existing album, use its album id for the new song instead
       if(!existingAlbum) {
         toast.error("Please select an album.")
-        setShowSpinner(false)
+        setIsSubmitting(false)
         return
       }
       albumId = data.albumOption.albumId
@@ -143,7 +143,7 @@ export default function UploadSongPage() {
 
     toast.success(`The song "${data.songTitle}" was uploaded successfully.`)
 
-    setShowSpinner(false)
+    setIsSubmitting(false)
 
     // Redirect the user to the album
     navigate(`/library/albums/${albumId}`)
@@ -290,11 +290,11 @@ export default function UploadSongPage() {
             )}
           </div>
 
-          <Button type="submit" className="mt-4">
+          <Button type="submit" className="mt-4" disabled={isSubmitting}>
             Upload Song
           </Button>
 
-          {showSpinner
+          {isSubmitting
             ? <Spinner className="ml-4 size-10 inline"/>
             : null}
 
