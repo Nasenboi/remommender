@@ -5,7 +5,7 @@ import React, {useState} from "react"
 import type {AudioResult} from "~/lib/AudioRecorder"
 import {Label} from "~/components/ui/label"
 import {Switch} from "~/components/ui/switch"
-import {StatsCard} from "~/components/StatsCard"
+import {StatsCard} from "~/components/stats-card"
 
 export function meta({}: Route.MetaArgs) {
   return [
