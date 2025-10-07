@@ -39,11 +39,21 @@ def recommend_from_speech(
 ):
     session_data = request.session.get("data", SessionData().model_dump())
 
-    emotion_features = get_emotion_features_from_speech(file, invert_valence, invert_arousal)
+    emotion_features = get_emotion_features_from_speech(file)
+
+    valence = emotion_features.valence
+    arousal = emotion_features.arousal
+
+    if invert_valence:
+        valence = -valence
+    if invert_arousal:
+        arousal = -arousal
+
+    print(invert_valence)
 
     features = SongFeaturesSchema(
-        valence=emotion_features.valence,
-        arousal=emotion_features.arousal,
+        valence=valence,
+        arousal=arousal,
         authenticity=authenticity,
         timeliness=timeliness,
         complexity=complexity,
@@ -61,7 +71,7 @@ def recommend_from_speech(
             "No recommendation could be generated. This is probably because the song library is empty or you have set filters for which no song could be found within the library.",
         )
 
-    session_data = update_session_data(emotion_features.valence, emotion_features.arousal, session_data)
+    session_data = update_session_data(valence, arousal, session_data)
 
     session_data["old_mean"], switch_probability = calculate_array_switch_probability(
         session_data, arousal_weight, valence_weight
@@ -74,6 +84,6 @@ def recommend_from_speech(
 
     return RecommendFromSpeechResponseSchema(
         song=song,
-        features=features,
-        switch_probability=switch_probability,
+        speech_features=emotion_features,
+        switch_probability=switch_probability
     )

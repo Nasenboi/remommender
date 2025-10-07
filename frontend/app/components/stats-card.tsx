@@ -49,13 +49,13 @@ export function StatsCard({ audioHistory }: StatsCardProps) {
     const result = audioHistory[i]
     arousalChartData.push({
       recommendationNumber: i+1,
-      speech: result.features.arousal,
+      speech: result.speech_features.arousal,
       song: result.song.features.arousal,
       songTitle: result.song.title
     })
     valenceChartData.push({
       recommendationNumber: i+1,
-      speech: result.features.valence,
+      speech: result.speech_features.valence,
       song: result.song.features.valence,
       songTitle: result.song.title
     })

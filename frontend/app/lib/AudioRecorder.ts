@@ -11,16 +11,9 @@ import {toast} from "sonner"
 
 export type AudioResult = {
   song: Song
-  features: {
+  speech_features: {
     valence: number
     arousal: number
-    authenticity: number | null
-    timeliness: number | null
-    complexity: number | null
-    danceability: number | null
-    tonal: number | null
-    voice: number | null
-    bpm: number | null
   }
   switch_probability: number
 }
@@ -132,7 +125,7 @@ export default class AudioRecorder {
     params.append('arousal_weight', settings.arousalWeight.toString())
     params.append('valence_weight', settings.valenceWeight.toString())
     params.append('invert_arousal', settings.invertArousal.toString())
-    params.append('invert_valence', settings.invertArousal.toString())
+    params.append('invert_valence', settings.invertValence.toString())
     if (settings.authenticityEnabled) params.append('authenticity', settings.authenticity.toString())
     if (settings.genreEnabled && settings.genre !== null) params.append('genre', settings.genre)
     if (settings.timelinessEnabled) params.append('timeliness', settings.timeliness.toString())

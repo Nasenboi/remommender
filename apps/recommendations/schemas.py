@@ -10,5 +10,5 @@ class EmotionFeaturesSchema(Schema):
 
 class RecommendFromSpeechResponseSchema(Schema):
     song: SongSchema
-    features: SongFeaturesSchema
+    speech_features: EmotionFeaturesSchema
     switch_probability: float
