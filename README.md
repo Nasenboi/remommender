@@ -1,4 +1,4 @@
-# Remommender - Music recommendation based on speech emotion
+# Remommender - Music Recommendation Based on Speech Emotion Recognition (SER) 
 
 <img width="800" alt="remommender" src="https://github.com/user-attachments/assets/f476b44f-0a21-4448-a9a6-91b0396d8aaa" />
 
