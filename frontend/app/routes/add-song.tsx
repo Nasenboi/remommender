@@ -42,7 +42,7 @@ const albumSchema = z.object({
 
 const formSchema = z.object({
   songTitle: z.string().min(1).max(255),
-  albumOption: z.union([
+  albumOption: z.discriminatedUnion('type', [
     z.object({
       type: z.literal('existing'),
       albumId: z.string()
@@ -228,24 +228,22 @@ export default function UploadSongPage() {
                     {...register('albumOption.albumData.title')}
                     placeholder="Enter album title"
                   />
-                  {(errors.albumOption as any)?.type === 'new' &&
-                    (errors.albumOption as any)?.albumData?.title && (
-                      <p className="text-red-500 text-sm">
-                        {(errors.albumOption as any).albumData.title.message}
-                      </p>
-                    )}
+                  {(errors.albumOption as any)?.albumData?.title && (
+                    <p className="text-red-500 text-sm">
+                      {(errors.albumOption as any).albumData.title.message}
+                    </p>
+                  )}
 
                   <Label>Album Artist</Label>
                   <Input
                     {...register('albumOption.albumData.artist')}
                     placeholder="Enter album artist"
                   />
-                  {(errors.albumOption as any)?.type === 'new' &&
-                    (errors.albumOption as any)?.albumData?.artist && (
-                      <p className="text-red-500 text-sm">
-                        {(errors.albumOption as any).albumData.artist.message}
-                      </p>
-                    )}
+                  {(errors.albumOption as any)?.albumData?.artist && (
+                    <p className="text-red-500 text-sm">
+                      {(errors.albumOption as any).albumData.artist.message}
+                    </p>
+                  )}
 
                   <Label>Album Cover</Label>
                   <Input
@@ -258,12 +256,13 @@ export default function UploadSongPage() {
                       )
                     }
                   />
-                  {(errors.albumOption as any)?.albumOption.type === 'new' &&
-                    (errors.albumOption as any)?.albumData?.cover && (
-                      <p className="text-red-500 text-sm">
-                        {(errors.albumOption as any).albumData.cover.message}
-                      </p>
-                    )}
+                  {console.log(errors.albumOption)}
+                  {(errors.albumOption as any)?.albumData?.cover && (
+                    <p className="text-red-500 text-sm">
+                      {(errors.albumOption as any).albumData.cover.message}
+
+                    </p>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
