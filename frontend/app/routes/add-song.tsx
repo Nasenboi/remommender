@@ -86,7 +86,7 @@ export default function UploadSongPage() {
   })
 
   const onSubmit = async (data: FormValues) => {
-    // This will show a spinner and set the submit button to disabled.
+    // This will show a spinner and make the submit button disabled.
     setIsSubmitting(true)
 
     let albumId: string
@@ -160,7 +160,7 @@ export default function UploadSongPage() {
         albumData: {
           title: '',
           artist: '',
-          cover: undefined as unknown as File, // empty placeholder (ugly, i know)
+          cover: undefined as unknown as File, // empty placeholder (ugly, I know)
         }
       });
     } else {
@@ -177,7 +177,6 @@ export default function UploadSongPage() {
         <h1 className="text-2xl font-bold">Upload New Song</h1>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          {/* Song Title */}
           <div className="space-y-2">
             <Label htmlFor="songTitle">Song Title</Label>
             <Input id="songTitle" {...register('songTitle')} />
@@ -256,7 +255,6 @@ export default function UploadSongPage() {
                       )
                     }
                   />
-                  {console.log(errors.albumOption)}
                   {(errors.albumOption as any)?.albumData?.cover && (
                     <p className="text-red-500 text-sm">
                       {(errors.albumOption as any).albumData.cover.message}
