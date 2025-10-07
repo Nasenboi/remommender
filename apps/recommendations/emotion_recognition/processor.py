@@ -22,7 +22,7 @@ class SERProcessor:
         dominance: np.float32
         valence: np.float32
 
-    def __init__(self, max_length: int = 30):
+    def __init__(self, max_length: int = 60):
         self._device = "cuda:0" if torch.cuda.is_available() else "cpu"
         model_name = "audeering/wav2vec2-large-robust-12-ft-emotion-msp-dim"
         self._processor = Wav2Vec2Processor.from_pretrained(model_name)
@@ -34,8 +34,6 @@ class SERProcessor:
         """
         Process audio file
         :param file: Path to the audio file or a file-like object
-        :param window_size_s: Size of the window in seconds
-        :param hop_size_s: Size of the hop in seconds
         :return: SpeechEmotionResult or list of SpeechEmotionResults
         """
         try:
