@@ -49,8 +49,6 @@ def recommend_from_speech(
     if invert_arousal:
         arousal = -arousal
 
-    print(invert_valence)
-
     features = SongFeaturesSchema(
         valence=valence,
         arousal=arousal,
