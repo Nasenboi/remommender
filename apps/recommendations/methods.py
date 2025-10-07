@@ -13,7 +13,7 @@ serprocessor = SERProcessor()
 
 
 def get_emotion_features_from_speech(
-    file: UploadedFile, invert_arousal: bool, invert_valence: bool
+    file: UploadedFile
 ) -> EmotionFeaturesSchema:
     """
     Extract emotion features from a speech audio file.
@@ -24,11 +24,6 @@ def get_emotion_features_from_speech(
 
     valence = speech_emotion_result.valence * 2 - 1
     arousal = speech_emotion_result.arousal * 2 - 1
-
-    if invert_valence:
-        valence = -valence
-    if invert_arousal:
-        arousal = -arousal
 
     return EmotionFeaturesSchema(valence=valence, arousal=arousal)
 
