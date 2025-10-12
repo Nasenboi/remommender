@@ -1,5 +1,6 @@
 from typing import List, Tuple
 
+import pandas as pd
 from ninja.files import UploadedFile
 
 from apps.core.schemas import Playlist, SongSchema
@@ -7,7 +8,8 @@ from apps.session.schemas import SessionData
 
 from .emotion_recognition.processor import SERProcessor
 from .emotion_slope_detection.emotion_slope_detection import get_slope_probability, update_samples
-from .schemas import EmotionFeaturesSchema
+from .models import RecommendationStatistics
+from .schemas import EmotionFeaturesSchema, RecommendationStatisticsSchema
 
 serprocessor = SERProcessor()
 
@@ -68,3 +70,15 @@ def get_song_recommendation(
         if str(song.id) not in songs_played:
             return song
     return playlist[0] if playlist else None
+
+
+def summarize_statistics() -> pd.DataFrame:
+    """
+    Summarize recommendation statistics into a pandas DataFrame.
+    """
+    stats = RecommendationStatistics.objects.all().select_related("song_id", "album_id")
+    data = []
+    for stat in stats:
+        data.append(RecommendationStatisticsSchema.from_orm(stat).model_dump())
+    df = pd.DataFrame(data)
+    return df

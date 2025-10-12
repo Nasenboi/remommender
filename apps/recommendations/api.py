@@ -1,5 +1,7 @@
+from io import BytesIO
 from typing import Optional
 
+from django.http import FileResponse
 from ninja import Router
 from ninja.errors import HttpError
 from ninja.files import UploadedFile
@@ -11,8 +13,10 @@ from .methods import (
     calculate_array_switch_probability,
     get_emotion_features_from_speech,
     get_song_recommendation,
+    summarize_statistics,
     update_session_data,
 )
+from .models import RecommendationStatistics
 from .recommender.consts import GENRE_DATA_BASE
 from .recommender.methods import generate_playlist
 from .schemas import RecommendFromSpeechResponseSchema
@@ -80,8 +84,36 @@ def recommend_from_speech(
     # save updated session data
     request.session["data"] = session_data
 
+    if request.session.session_key is None:
+        request.session.save()
+
+    # save statistics
+    RecommendationStatistics.objects.create(
+        session_id=str(request.session.session_key) or "unknown",
+        switch_probability=switch_probability,
+        valence=emotion_features.valence,
+        arousal=emotion_features.arousal,
+        song=song,
+        album=song.album if song.album else None,
+    )
+
     return RecommendFromSpeechResponseSchema(
         song=song,
         speech_features=emotion_features,
         switch_probability=switch_probability
     )
+
+
+@router.get("/statistics")
+def download_statistics(request):
+    df = summarize_statistics()
+    buffer = BytesIO()
+    df.to_csv(buffer, index=False)
+    buffer.seek(0)
+    return FileResponse(buffer, as_attachment=True, filename="recommendation_statistics.csv", content_type="text/csv")
+
+
+@router.delete("/statistics")
+def clear_statistics(request):
+    RecommendationStatistics.objects.all().delete()
+    return {"detail": "All recommendation statistics have been deleted."}
