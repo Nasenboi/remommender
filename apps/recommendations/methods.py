@@ -1,3 +1,4 @@
+import os
 from typing import List, Tuple
 
 import pandas as pd
@@ -19,6 +20,11 @@ def get_serprocessor() -> SERProcessor:
     if not hasattr(get_serprocessor, "_instance"):
         get_serprocessor._instance = SERProcessor()
     return get_serprocessor._instance
+
+
+# run on api server startup
+if os.getenv("START_MODELS"):
+    get_serprocessor()
 
 
 def get_emotion_features_from_speech(file: UploadedFile) -> EmotionFeaturesSchema:

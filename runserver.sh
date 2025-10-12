@@ -48,6 +48,9 @@ else
     echo "** One or more PRE_CALC_* environment variables are not set. Skipping add_pre_calculated_songs. **"
 fi
 
+echo "<< Now it's time to load Models into memory >>"
+export START_MODELS=true
+
 echo "<< Check new songs to add >>"
 
 if [[ -n "$NEW_SONGS_PATH" ]]; then

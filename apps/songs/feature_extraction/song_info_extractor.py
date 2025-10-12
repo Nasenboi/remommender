@@ -1,5 +1,6 @@
 import json
 import math
+import os
 import random
 import statistics
 import warnings
@@ -65,6 +66,13 @@ def get_global_bpm_model() -> TempoCNN:
         get_global_bpm_model._instance = TempoCNN(graphFilename=ML_MODELS["bpm"])
         print("loaded Global BPM Model")
     return get_global_bpm_model._instance
+
+
+# run on api server startup
+if os.getenv("START_MODELS"):
+    get_muscnn_models()
+    get_global_bpm_model()
+    get_random_forests()
 
 
 def del_features_from_df(df):
