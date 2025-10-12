@@ -11,13 +11,13 @@ from apps.core.models import Album, Song, SongFeatures, SongGenres
 from apps.core.schemas import AlbumSchema, SongCreateSchema, SongSchema
 
 from .methods import calculate_genres_and_features
-from .schemas import AlbumDetailSchema
+from .schemas import AlbumDetailSchema, AlbumUpdateSchema, SongUpdateSchema
 
 songs_router = Router(tags=["songs"])
 albums_router = Router(tags=["albums"])
 
 
-@albums_router.post("/")
+@albums_router.post("/", response=AlbumSchema)
 def upload_album(
     request,
     artwork_file: UploadedFile = File(...),
@@ -27,15 +27,15 @@ def upload_album(
     if not artwork_file.name.endswith((".jpg", ".jpeg", ".png")):
         raise ValidationError("Unsupported file format. Please upload an image file.")
 
-    # Check if the artwork_file already exists
+    # Check if the album already exists
     # will not return an error!
     # should do this in the future, maybe
-    existing_artwork_file = Album.objects.filter(album_name=album_name, artist=artist).first()
-    if existing_artwork_file:
-        return {"id": existing_artwork_file.id}
+    existing_album = Album.objects.filter(album_name=album_name, artist=artist).first()
+    if existing_album:
+        return {"id": existing_album.id}
 
     album = Album.objects.create(album_name=album_name, artwork_file=artwork_file, artist=artist)
-    return {"id": album.id}
+    return AlbumSchema.from_orm(album)
 
 
 @albums_router.get("/", response=List[AlbumSchema])
@@ -46,11 +46,6 @@ def list_albums(request, album_name: str = None):
         qs = qs.filter(album_name__icontains=album_name)
     qs = qs.order_by("album_name")
     return qs
-
-
-@albums_router.get("/all", response=List[AlbumSchema])
-def list_all_albums(request):
-    return Album.objects.all()
 
 
 @albums_router.get("/{album_id}", response=AlbumDetailSchema)
@@ -65,6 +60,30 @@ def get_album_details(request, album_id: UUID):
     return detail_album
 
 
+@albums_router.put("/{album_id}/", response=AlbumSchema)
+def update_album(request, album_id: UUID, album_data: AlbumUpdateSchema):
+    album = get_object_or_404(Album, id=album_id)
+
+    update_data = album_data.model_dump(exclude_unset=True)
+    for field, value in update_data.items():
+        setattr(album, field, value)
+
+    album.save()
+    return AlbumSchema.from_orm(album)
+
+
+@albums_router.post("/{album_id}/artwork", response=AlbumSchema)
+def update_album_artwork(request, album_id: UUID, artwork_file: UploadedFile = File(...)):
+    album = get_object_or_404(Album, id=album_id)
+
+    if not artwork_file.name.endswith((".jpg", ".jpeg", ".png")):
+        raise ValidationError("Unsupported file format. Please upload an image file.")
+
+    album.artwork_file = artwork_file
+    album.save()
+    return AlbumSchema.from_orm(album)
+
+
 @albums_router.delete("/{album_id}")
 def delete_album(request, album_id: UUID, delete_songs: bool = True):
     album = get_object_or_404(Album, id=album_id)
@@ -77,7 +96,7 @@ def delete_album(request, album_id: UUID, delete_songs: bool = True):
     return {"deleted": True}
 
 
-@songs_router.post("/")
+@songs_router.post("/", response=SongSchema)
 def create_and_upload_song(
     request,
     song: SongCreateSchema = Form(...),
@@ -112,6 +131,18 @@ def list_songs(request, title: str = None):
         qs = qs.filter(title__icontains=title)
     qs = qs.order_by("title")
     return qs
+
+
+@songs_router.put("/{song_id}/", response=SongSchema)
+def update_song(request, song_id: UUID, song_data: SongUpdateSchema):
+    song = get_object_or_404(Song, id=song_id)
+
+    update_data = song_data.model_dump(exclude_unset=True)
+    for field, value in update_data.items():
+        setattr(song, field, value)
+
+    song.save()
+    return SongSchema.from_orm(song)
 
 
 @songs_router.delete("/{song_id}")
