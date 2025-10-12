@@ -48,5 +48,14 @@ else
     echo "** One or more PRE_CALC_* environment variables are not set. Skipping add_pre_calculated_songs. **"
 fi
 
+echo "<< Check new songs to add >>"
+
+if [[ -n "$NEW_SONGS_PATH" ]]; then
+    echo "** NEW_SONGS_PATH is set. Running add_songs_from_folder. **"
+    python manage.py add_songs_from_folder
+else
+    echo "** NEW_SONGS_PATH is not set. Skipping add_songs_from_folder. **"
+fi
+
 echo "<< Starting the Django development server >>"
 python manage.py runserver 0.0.0.0:8000

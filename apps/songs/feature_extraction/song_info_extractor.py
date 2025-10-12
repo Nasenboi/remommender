@@ -83,6 +83,15 @@ for key in GMBI_RF_MODELS.keys():
     random_forest[key] = joblib.load(GMBI_RF_MODELS[key])
     print("loaded Random Forest Models: ", key)
 
+muscnn_models = {}
+for model in ML_MODELS:
+    if model == "bpm":
+        continue
+    muscnn_models[model] = TensorflowPredictMusiCNN(graphFilename=ML_MODELS[model])
+    print("loaded MusiCNN Model: ", model)
+
+global_bpm_model = TempoCNN(graphFilename=ML_MODELS["bpm"])
+
 
 class SongInfoExtractor:
     sr = 44100
@@ -148,7 +157,7 @@ class SongInfoExtractor:
                 else:
                     get_predicted_class = 0
 
-                predictions = TensorflowPredictMusiCNN(graphFilename=ML_MODELS[model])(audio_16khz)
+                predictions = muscnn_models[model](audio_16khz)
                 features["mean"][model] = np.around(
                     np.mean(predictions, axis=0)[get_predicted_class], decimals=8
                 ).tolist()
@@ -163,7 +172,7 @@ class SongInfoExtractor:
                     )
 
             else:
-                global_bpm = TempoCNN(graphFilename=ML_MODELS[model])(audio_11khz)[0]
+                global_bpm = global_bpm_model(audio_11khz)[0]
                 features["mean"][model] = round(float(global_bpm), 2)
 
                 # storing for gmbi inference
@@ -178,7 +187,7 @@ class SongInfoExtractor:
 
         features = {"all_genres": {}, "top3_genres": {}, "top3_genres_frames": {}}
         audio_16khz = librosa.resample(self.audio, orig_sr=self.sr, target_sr=16000)
-        predictions = TensorflowPredictMusiCNN(graphFilename=ML_MODELS["genre"])(audio_16khz)
+        predictions = muscnn_models["genre"](audio_16khz)
 
         predictions_mean = np.array(np.around(np.mean(predictions, axis=0).astype(float), decimals=8))
 

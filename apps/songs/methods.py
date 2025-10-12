@@ -150,3 +150,79 @@ def calculate_genres_and_features(audio_file: UploadedFile) -> Tuple[SongGenresS
         )
 
     return genres, features, duration_s
+
+
+def add_song(title: str, artist: str, audio_file_path: str, album: Album = None) -> Song:
+    """
+    Adds a song to the db if it does not exist yet.
+    Returns the song object.
+    """
+    try:
+        existing_song = Song.objects.filter(title=title, artist=artist).first()
+        if existing_song:
+            print(f"Existing {existing_song.title} from {existing_song.artist} found in db!")
+            return existing_song
+
+        with open(audio_file_path, "rb") as f:
+            audio_file = File(f, name=os.path.basename(audio_file_path))
+            genres, features, duration_s = calculate_genres_and_features(audio_file)
+
+            song = Song.objects.create(
+                title=title,
+                artist=artist,
+                duration_s=duration_s,
+                features=SongFeatures.objects.create(**features.dict()),
+                genres=SongGenres.objects.create(**genres.dict()),
+                audio_file=audio_file,
+                album=album,
+            )
+            print(f"Added {song.title} from {song.artist} to db!")
+            return song
+    except Exception as e:
+        print(f"Error adding song {title} from {artist}: {e}")
+        return None
+
+
+def add_albums_and_songs() -> None:
+    """
+    Adds songs from a folder, if there are subfolders, they are used as albums.
+    """
+
+    new_songs_path = os.getenv("NEW_SONGS_PATH")
+
+    folders = os.listdir(new_songs_path)
+
+    for folder in folders:
+        try:
+            folder_path = os.path.join(new_songs_path, folder)
+            if os.path.isdir(folder_path):
+                album_name = folder
+                album_art_path = os.path.join(folder_path, "album_art.jpg")
+                artist = "Unknown Artist"
+
+                # First add album if it does not exist yet
+                album = Album.objects.filter(album_name=album_name).first()
+
+                if not album:
+                    if os.path.exists(album_art_path):
+                        with open(album_art_path, "rb") as f:
+                            album = Album.objects.create(
+                                artwork_file=File(f, name=f"{album_name}_art.jpg"),
+                                album_name=album_name,
+                                artist=artist,
+                            )
+                    else:
+                        album = Album.objects.create(album_name=album_name, artist=artist)
+
+                # Now add songs in this folder
+                for file in os.listdir(folder_path):
+                    if file.lower().endswith((".mp3")):
+                        add_song(
+                            title=os.path.splitext(file)[0],
+                            artist=artist,
+                            audio_file_path=os.path.join(folder_path, file),
+                            album=album,
+                        )
+            print(f"Finished processing folder: {folder_path}")
+        except Exception as e:
+            print(f"Error processing folder {folder}: {e}")
