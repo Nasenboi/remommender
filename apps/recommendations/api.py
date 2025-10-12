@@ -12,7 +12,6 @@ from apps.session.schemas import SessionData
 from .methods import (
     calculate_array_switch_probability,
     get_emotion_features_from_speech,
-    get_song_recommendation,
     summarize_statistics,
     update_session_data,
 )
@@ -65,27 +64,25 @@ def recommend_from_speech(
         bpm=bpm,
     )
 
-    playlist = generate_playlist(genre=genre, features=features)
+    session_data = update_session_data(valence, arousal, session_data)
 
-    if len(playlist) == 0:
+    playlist = generate_playlist(genre=genre, features=features, songs_played=session_data["songs_played"])
+
+    if playlist is None or len(playlist) == 0:
         raise HttpError(
             500,
             "No recommendation could be generated. This is probably because the song library is empty or you have set filters for which no song could be found within the library.",
         )
 
-    session_data = update_session_data(valence, arousal, session_data)
+    song = playlist[0]
 
     session_data["old_mean"], switch_probability = calculate_array_switch_probability(
         session_data, arousal_weight, valence_weight
     )
 
-    song = get_song_recommendation(playlist, session_data["songs_played"])
-
-    # save updated session data
     request.session["data"] = session_data
 
-    if request.session.session_key is None:
-        request.session.save()
+    request.session.save()
 
     # save statistics
     RecommendationStatistics.objects.create(
@@ -98,9 +95,7 @@ def recommend_from_speech(
     )
 
     return RecommendFromSpeechResponseSchema(
-        song=song,
-        speech_features=emotion_features,
-        switch_probability=switch_probability
+        song=song, speech_features=emotion_features, switch_probability=switch_probability
     )
 
 

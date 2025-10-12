@@ -1,4 +1,4 @@
-from typing import List, Tuple, Optional
+from typing import List, Optional, Tuple
 
 import numpy as np
 from annoy import AnnoyIndex
@@ -24,6 +24,7 @@ def get_song_id() -> List[str]:
 def get_song_id_and_dimensions(
     genre: Optional[GENRE_DATA_BASE],
     features: List[str],
+    songs_played: Optional[List[str]] = None,
 ) -> Tuple[List[str], List[List[float]]]:
     """
     Get song IDs and their corresponding dimensions from database
@@ -37,13 +38,13 @@ def get_song_id_and_dimensions(
 
     songs = Song.objects.all()
 
-    for song in songs:
-        # Skip song if a genre filter is set and the genre is not included in top3_genres.
-        # This is inefficient but SQLite (Django's default database) does not support filtering JSONFields (such as
-        # top3_genres) by key, hence a solution like this has to be used.
-        if genre and genre not in song.genres.top3_genres:
-            continue
+    if songs_played:
+        songs = songs.exclude(id__in=songs_played)
 
+    if genre:
+        songs = songs.filter(genres__top3_genres__has_key=genre)
+
+    for song in songs:
         song_IDs.append(song.id)
         song_features = song.features.to_dict(include=features)
         dimensions = list(song_features.values())
@@ -71,8 +72,7 @@ def get_song_information(top_IDs: List[str]) -> Playlist:
 
 
 def generate_playlist(
-    features: SongFeaturesSchema,
-    genre: Optional[GENRE_DATA_BASE] = None,
+    features: SongFeaturesSchema, genre: Optional[GENRE_DATA_BASE] = None, songs_played: Optional[List[str]] = None
 ) -> Playlist:
     """
     Generate a playlist based on the input vector and playlist type.
@@ -84,7 +84,7 @@ def generate_playlist(
     # Use only features that are present in the features object
     features_search = [key for key, value in features.model_dump().items() if value is not None]
 
-    song_id_dimensions = get_song_id_and_dimensions(genre, features=features_search)
+    song_id_dimensions = get_song_id_and_dimensions(genre=genre, features=features_search, songs_played=songs_played)
 
     top_songs_ids = k_d_tree(data=song_id_dimensions, features=features, numClosestNeighbours=PLAYLIST_LENGTH)
 

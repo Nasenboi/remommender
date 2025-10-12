@@ -4,7 +4,6 @@ from typing import List, Tuple
 import pandas as pd
 from ninja.files import UploadedFile
 
-from apps.core.schemas import Playlist, SongSchema
 from apps.session.schemas import SessionData
 
 from .emotion_recognition.processor import SERProcessor
@@ -65,22 +64,6 @@ def calculate_array_switch_probability(
     """
 
     return get_slope_probability(session_data["samples"], session_data["old_mean"], arousal_weight, valence_weight)
-
-
-def get_song_recommendation(
-    playlist: Playlist,
-    songs_played: List[str],
-) -> SongSchema:
-    """
-    Return either a song that was not played yet or the first song from the playlist.
-    :param playlist: Playlist containing SongSchema objects.
-    :param songs_played: List of song IDs that have already been played.
-    :return: A SongSchema object representing the recommended song.
-    """
-    for song in playlist:
-        if str(song.id) not in songs_played:
-            return song
-    return playlist[0] if playlist else None
 
 
 def summarize_statistics() -> pd.DataFrame:
