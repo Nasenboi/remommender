@@ -28,6 +28,45 @@ from apps.songs.feature_extraction.consts import *
 from apps.songs.feature_extraction.msa.msa import MusicStructureAnalysis
 
 
+def get_random_forests() -> dict:
+    """
+    A singleton pattern to load and return Random Forest models.
+    :return: Dictionary of model names and their corresponding loaded Random Forest models.
+    """
+    if not hasattr(get_random_forests, "_instance"):
+        get_random_forests._instance = {}
+        for key in GMBI_RF_MODELS.keys():
+            get_random_forests._instance[key] = joblib.load(GMBI_RF_MODELS[key])
+            print("loaded Random Forest Models: ", key)
+    return get_random_forests._instance
+
+
+def get_muscnn_models() -> dict:
+    """
+    A singleton pattern to load and return MusiCNN models.
+    :return: Dictionary of model names and their corresponding loaded MusiCNN models.
+    """
+    if not hasattr(get_muscnn_models, "_instance"):
+        get_muscnn_models._instance = {}
+        for model in ML_MODELS:
+            if model == "bpm":
+                continue
+            get_muscnn_models._instance[model] = TensorflowPredictMusiCNN(graphFilename=ML_MODELS[model])
+            print("loaded MusiCNN Model: ", model)
+    return get_muscnn_models._instance
+
+
+def get_global_bpm_model() -> TempoCNN:
+    """
+    A singleton pattern to load and return the global BPM model.
+    :return: The loaded global BPM TempoCNN model.
+    """
+    if not hasattr(get_global_bpm_model, "_instance"):
+        get_global_bpm_model._instance = TempoCNN(graphFilename=ML_MODELS["bpm"])
+        print("loaded Global BPM Model")
+    return get_global_bpm_model._instance
+
+
 def del_features_from_df(df):
     hpcp = []
     for i in range(0, 36):
@@ -76,21 +115,6 @@ def create_gmbi_df(features_ess, features_ml):
                             df["_".join([feature, i, str(j)])] = [item[i][j]]
 
     return del_features_from_df(df)
-
-
-random_forest = {}
-for key in GMBI_RF_MODELS.keys():
-    random_forest[key] = joblib.load(GMBI_RF_MODELS[key])
-    print("loaded Random Forest Models: ", key)
-
-muscnn_models = {}
-for model in ML_MODELS:
-    if model == "bpm":
-        continue
-    muscnn_models[model] = TensorflowPredictMusiCNN(graphFilename=ML_MODELS[model])
-    print("loaded MusiCNN Model: ", model)
-
-global_bpm_model = TempoCNN(graphFilename=ML_MODELS["bpm"])
 
 
 class SongInfoExtractor:
@@ -157,7 +181,7 @@ class SongInfoExtractor:
                 else:
                     get_predicted_class = 0
 
-                predictions = muscnn_models[model](audio_16khz)
+                predictions = get_muscnn_models()[model](audio_16khz)
                 features["mean"][model] = np.around(
                     np.mean(predictions, axis=0)[get_predicted_class], decimals=8
                 ).tolist()
@@ -172,7 +196,7 @@ class SongInfoExtractor:
                     )
 
             else:
-                global_bpm = global_bpm_model(audio_11khz)[0]
+                global_bpm = get_global_bpm_model()(audio_11khz)[0]
                 features["mean"][model] = round(float(global_bpm), 2)
 
                 # storing for gmbi inference
@@ -187,7 +211,7 @@ class SongInfoExtractor:
 
         features = {"all_genres": {}, "top3_genres": {}, "top3_genres_frames": {}}
         audio_16khz = librosa.resample(self.audio, orig_sr=self.sr, target_sr=16000)
-        predictions = muscnn_models["genre"](audio_16khz)
+        predictions = get_muscnn_models()["genre"](audio_16khz)
 
         predictions_mean = np.array(np.around(np.mean(predictions, axis=0).astype(float), decimals=8))
 
@@ -242,7 +266,7 @@ class SongInfoExtractor:
             # run inference
             try:
                 for key in GMBI_RF_MODELS.keys():
-                    prediction = random_forest[key].predict(data)
+                    prediction = get_random_forests()[key].predict(data)
                     gmbi_data["frames"][key].append(round(prediction[0], 8))
             except Exception as e:
                 for key in GMBI_RF_MODELS.keys():

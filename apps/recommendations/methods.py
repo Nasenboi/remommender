@@ -11,7 +11,14 @@ from .emotion_slope_detection.emotion_slope_detection import get_slope_probabili
 from .models import RecommendationStatistics
 from .schemas import EmotionFeaturesSchema, RecommendationStatisticsSchema
 
-serprocessor = SERProcessor()
+
+def get_serprocessor() -> SERProcessor:
+    """
+    Singleton pattern to get the SERProcessor instance.
+    """
+    if not hasattr(get_serprocessor, "_instance"):
+        get_serprocessor._instance = SERProcessor()
+    return get_serprocessor._instance
 
 
 def get_emotion_features_from_speech(file: UploadedFile) -> EmotionFeaturesSchema:
@@ -20,7 +27,7 @@ def get_emotion_features_from_speech(file: UploadedFile) -> EmotionFeaturesSchem
     :param file: Uploaded audio file
     :return: EmotionFeatures dataclass containing valence, arousal, dominance, authenticity, timeliness, and complexity
     """
-    speech_emotion_result = serprocessor.process_audio_file(file)
+    speech_emotion_result = get_serprocessor().process_audio_file(file)
 
     valence = speech_emotion_result.valence * 2 - 1
     arousal = speech_emotion_result.arousal * 2 - 1
