@@ -20,7 +20,7 @@ class AlbumSchema(Schema):
     id: UUID
     album_name: str
     artist: str
-    artwork_url: str
+    artwork_url: Optional[str] = None
 
 
 class SongFeaturesSchema(Schema):
