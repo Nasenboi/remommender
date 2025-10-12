@@ -73,19 +73,22 @@ class RecommendationStatistics(models.Model):
     @property
     def song_top_1_genre(self):
         if self.song and self.song.genres and self.song.genres.top3_genres:
-            return self.song.genres.top3_genres.keys()[0] if len(self.song.genres.top3_genres) > 0 else None
+            keys = list(self.song.genres.top3_genres.keys())
+            return keys[0] if len(keys) > 0 else None
         return None
 
     @property
     def song_top_2_genre(self):
         if self.song and self.song.genres and self.song.genres.top3_genres:
-            return self.song.genres.top3_genres.keys()[1] if len(self.song.genres.top3_genres) > 1 else None
+            keys = list(self.song.genres.top3_genres.keys())
+            return keys[1] if len(keys) > 1 else None
         return None
 
     @property
     def song_top_3_genre(self):
         if self.song and self.song.genres and self.song.genres.top3_genres:
-            return self.song.genres.top3_genres.keys()[2] if len(self.song.genres.top3_genres) > 2 else None
+            keys = list(self.song.genres.top3_genres.keys())
+            return keys[2] if len(keys) > 2 else None
         return None
 
     @property

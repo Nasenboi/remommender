@@ -14,9 +14,7 @@ from .schemas import EmotionFeaturesSchema, RecommendationStatisticsSchema
 serprocessor = SERProcessor()
 
 
-def get_emotion_features_from_speech(
-    file: UploadedFile
-) -> EmotionFeaturesSchema:
+def get_emotion_features_from_speech(file: UploadedFile) -> EmotionFeaturesSchema:
     """
     Extract emotion features from a speech audio file.
     :param file: Uploaded audio file
@@ -76,7 +74,7 @@ def summarize_statistics() -> pd.DataFrame:
     """
     Summarize recommendation statistics into a pandas DataFrame.
     """
-    stats = RecommendationStatistics.objects.all().select_related("song_id", "album_id")
+    stats = RecommendationStatistics.objects.all().select_related("song", "album")
     data = []
     for stat in stats:
         data.append(RecommendationStatisticsSchema.from_orm(stat).model_dump())

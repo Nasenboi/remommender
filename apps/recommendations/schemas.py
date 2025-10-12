@@ -1,9 +1,10 @@
+from datetime import datetime
 from typing import Optional, Union
 from uuid import UUID
 
 from ninja import Schema
 
-from apps.core.schemas import SongFeaturesSchema, SongSchema
+from apps.core.schemas import SongSchema
 
 
 class EmotionFeaturesSchema(Schema):
@@ -20,7 +21,7 @@ class RecommendFromSpeechResponseSchema(Schema):
 class RecommendationStatisticsSchema(Schema):
     # general
     session_id: Union[UUID, str]
-    timestamp: str
+    timestamp: Union[str, datetime]
     switch_probability: float
 
     # Emotion Features
@@ -28,10 +29,10 @@ class RecommendationStatisticsSchema(Schema):
     arousal: float
 
     # Song Infos
-    song_id: Union[UUID, str]
-    song_title: str
-    song_artist: str
-    song_duration_s: float
+    song_id: Optional[Union[UUID, str]] = None
+    song_title: Optional[str] = None
+    song_artist: Optional[str] = None
+    song_duration_s: Optional[float] = None
     song_valence: Optional[float] = None
     song_arousal: Optional[float] = None
     song_authenticity: Optional[float] = None
@@ -44,10 +45,10 @@ class RecommendationStatisticsSchema(Schema):
     song_top_1_genre: Optional[str] = None
     song_top_2_genre: Optional[str] = None
     song_top_3_genre: Optional[str] = None
-    song_url: Optional[str]
+    song_url: Optional[str] = None
 
     # Album Infos
     album_id: Optional[Union[UUID, str]] = None
     album_name: Optional[str] = None
     album_artist: Optional[str] = None
-    artwork_url: Optional[str]
+    artwork_url: Optional[str] = None
