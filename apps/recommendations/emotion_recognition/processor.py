@@ -47,7 +47,9 @@ class SERProcessor:
             raise e
 
         if len(samples) > self._max_length_samples:
-            raise HttpError(400, f"Audio file is longer than the maximum specified length ({self._max_length} seconds)")
+            raise HttpError(
+                400, f"Audio file is longer than the maximum specified length ({self._max_length} seconds)"
+            )
 
         return self._audio_to_speech_emotion(samples)
 
